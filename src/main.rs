@@ -4,11 +4,28 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_startup_system(load_assets)
+        .add_system(change_base)
+        .add_system(update_base_sprite)
         .run();
+}
+
+trait ToSpriteIndex {
+    const START_SPRITE_INDEX: usize = 0;
+    fn to_sprite_index(self: &Self) -> usize {
+        Self::START_SPRITE_INDEX
+    }
 }
 
 #[derive(Component)]
 struct Base(i32);
+
+impl ToSpriteIndex for Base {
+    const START_SPRITE_INDEX: usize = 0;
+
+    fn to_sprite_index(self: &Self) -> usize {
+        Self::START_SPRITE_INDEX + (self.0 as usize)
+    }
+}
 
 #[derive(Component)]
 struct Glazing(i32);
@@ -41,7 +58,7 @@ fn load_assets(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    let donuts_texture: Handle<Image> = asset_server.load("assets/Spritesheet/donuts_sheet.png");
+    let donuts_texture: Handle<Image> = asset_server.load("Donuts/Spritesheet/donuts_sheet.png");
 
     let mut donuts_atlas = TextureAtlas::new_empty(donuts_texture.clone(), Vec2::new(1024., 2048.));
     for SubTexture {
@@ -60,12 +77,58 @@ fn load_assets(
 
     let donuts_atlas_handle = texture_atlases.add(donuts_atlas);
 
-    commands.spawn_bundle(DonutBundle {
-        base: Base(1),
-        glazing: Glazing(1),
-        sprinkles: Sprinkles(1),
-        stripes: Stripes(1),
-    });
+    commands.spawn_bundle(Camera2dBundle::default());
+
+    commands
+        .spawn_bundle(SpatialBundle::default())
+        .with_children(|parent| {
+            parent
+                .spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: donuts_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+                        index: 0,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert(Base(1));
+
+            parent.spawn_bundle(SpriteSheetBundle {
+                texture_atlas: donuts_atlas_handle.clone(),
+                sprite: TextureAtlasSprite {
+                    index: 3,
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+
+            parent.spawn_bundle(SpriteSheetBundle {
+                texture_atlas: donuts_atlas_handle.clone(),
+                sprite: TextureAtlasSprite {
+                    index: 13,
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+        });
+}
+
+fn change_base(keys: Res<Input<KeyCode>>, mut query: Query<&mut Base>) {
+    for mut base in query.iter_mut() {
+        if keys.just_pressed(KeyCode::Right) {
+            base.0 += 1;
+        }
+
+        if keys.just_pressed(KeyCode::Left) {
+            base.0 -= 1;
+        }
+    }
+}
+
+fn update_base_sprite(mut query: Query<(&Base, &mut TextureAtlasSprite), Changed<Base>>) {
+    for (base, mut sprite) in query.iter_mut() {
+        sprite.index = base.to_sprite_index();
+    }
 }
 
 // I was too lazy to load and parse XML
