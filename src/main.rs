@@ -1,47 +1,18 @@
 use bevy::prelude::*;
+mod components;
+
+use components::*;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_startup_system(load_assets)
-        .add_system(change_base)
+        .add_system(change_donut)
         .add_system(update_base_sprite)
+        .add_system(update_glazing_sprite)
+        .add_system(update_sprinkles_sprite)
+        .add_system(update_stripes_sprite)
         .run();
-}
-
-trait ToSpriteIndex {
-    const START_SPRITE_INDEX: usize = 0;
-    fn to_sprite_index(self: &Self) -> usize {
-        Self::START_SPRITE_INDEX
-    }
-}
-
-#[derive(Component)]
-struct Base(i32);
-
-impl ToSpriteIndex for Base {
-    const START_SPRITE_INDEX: usize = 0;
-
-    fn to_sprite_index(self: &Self) -> usize {
-        Self::START_SPRITE_INDEX + (self.0 as usize)
-    }
-}
-
-#[derive(Component)]
-struct Glazing(i32);
-
-#[derive(Component)]
-struct Sprinkles(i32);
-
-#[derive(Component)]
-struct Stripes(i32);
-
-#[derive(Bundle)]
-struct DonutBundle {
-    base: Base,
-    glazing: Glazing,
-    sprinkles: Sprinkles,
-    stripes: Stripes,
 }
 
 struct SubTexture {
@@ -86,41 +57,89 @@ fn load_assets(
                 .spawn_bundle(SpriteSheetBundle {
                     texture_atlas: donuts_atlas_handle.clone(),
                     sprite: TextureAtlasSprite {
-                        index: 0,
+                        index: Base::START_SPRITE_INDEX,
                         ..Default::default()
                     },
                     ..Default::default()
                 })
-                .insert(Base(1));
+                .insert(Base(0));
 
-            parent.spawn_bundle(SpriteSheetBundle {
-                texture_atlas: donuts_atlas_handle.clone(),
-                sprite: TextureAtlasSprite {
-                    index: 3,
+            parent
+                .spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: donuts_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+                        index: Glazing::START_SPRITE_INDEX,
+                        ..Default::default()
+                    },
                     ..Default::default()
-                },
-                ..Default::default()
-            });
+                })
+                .insert(Glazing(0));
 
-            parent.spawn_bundle(SpriteSheetBundle {
-                texture_atlas: donuts_atlas_handle.clone(),
-                sprite: TextureAtlasSprite {
-                    index: 13,
+            parent
+                .spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: donuts_atlas_handle.clone(),
+                    sprite: TextureAtlasSprite {
+                        index: Sprinkles::START_SPRITE_INDEX,
+                        ..Default::default()
+                    },
                     ..Default::default()
-                },
-                ..Default::default()
-            });
+                })
+                .insert(Sprinkles(0));
         });
 }
 
-fn change_base(keys: Res<Input<KeyCode>>, mut query: Query<&mut Base>) {
-    for mut base in query.iter_mut() {
+fn change_donut(
+    keys: Res<Input<KeyCode>>,
+    mut bases: Query<&mut Base>,
+    mut glazings: Query<&mut Glazing>,
+    mut sprinkles: Query<&mut Sprinkles>,
+    mut stripes: Query<&mut Stripes>,
+) {
+    for mut base in bases.iter_mut() {
         if keys.just_pressed(KeyCode::Right) {
-            base.0 += 1;
+            base.cycle_right();
         }
 
         if keys.just_pressed(KeyCode::Left) {
-            base.0 -= 1;
+            base.cycle_left();
+        }
+
+        if keys.just_pressed(KeyCode::Key2) {
+            base.cycle_right();
+        }
+
+        if keys.just_pressed(KeyCode::Key1) {
+            base.cycle_left();
+        }
+    }
+
+    for mut glazing in glazings.iter_mut() {
+        if keys.just_pressed(KeyCode::W) {
+            glazing.cycle_right();
+        }
+
+        if keys.just_pressed(KeyCode::Q) {
+            glazing.cycle_left();
+        }
+    }
+
+    for mut sprinkle in sprinkles.iter_mut() {
+        if keys.just_pressed(KeyCode::S) {
+            sprinkle.cycle_right();
+        }
+
+        if keys.just_pressed(KeyCode::A) {
+            sprinkle.cycle_left();
+        }
+    }
+
+    for mut stripe in stripes.iter_mut() {
+        if keys.just_pressed(KeyCode::X) {
+            stripe.cycle_right();
+        }
+
+        if keys.just_pressed(KeyCode::Z) {
+            stripe.cycle_left();
         }
     }
 }
@@ -128,6 +147,26 @@ fn change_base(keys: Res<Input<KeyCode>>, mut query: Query<&mut Base>) {
 fn update_base_sprite(mut query: Query<(&Base, &mut TextureAtlasSprite), Changed<Base>>) {
     for (base, mut sprite) in query.iter_mut() {
         sprite.index = base.to_sprite_index();
+    }
+}
+
+fn update_glazing_sprite(mut query: Query<(&Glazing, &mut TextureAtlasSprite), Changed<Glazing>>) {
+    for (glazing, mut sprite) in query.iter_mut() {
+        sprite.index = glazing.to_sprite_index();
+    }
+}
+
+fn update_sprinkles_sprite(
+    mut query: Query<(&Sprinkles, &mut TextureAtlasSprite), Changed<Sprinkles>>,
+) {
+    for (sprinkles, mut sprite) in query.iter_mut() {
+        sprite.index = sprinkles.to_sprite_index();
+    }
+}
+
+fn update_stripes_sprite(mut query: Query<(&Stripes, &mut TextureAtlasSprite), Changed<Stripes>>) {
+    for (stripes, mut sprite) in query.iter_mut() {
+        sprite.index = stripes.to_sprite_index();
     }
 }
 
