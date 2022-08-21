@@ -1,18 +1,23 @@
 use bevy::prelude::*;
-mod components;
 
-use components::*;
+mod component;
+mod system;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_startup_system(load_assets)
-        .add_system(change_donut)
-        .add_system(update_base_sprite)
-        .add_system(update_glazing_sprite)
-        .add_system(update_sprinkles_sprite)
-        .add_system(update_stripes_sprite)
+        .add_system(system::change_cooking_donut)
+        .add_system(system::update_base_sprite)
+        .add_system(system::update_glazing_sprite)
+        .add_system(system::update_sprinkles_sprite)
+        .add_system(system::cook_another_donut)
+        .add_system(system::offer_cooked_donut)
         .run();
+}
+
+pub struct Handles {
+    donuts_atlas: Handle<TextureAtlas>,
 }
 
 struct SubTexture {
@@ -30,8 +35,7 @@ fn load_assets(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     let donuts_texture: Handle<Image> = asset_server.load("Donuts/Spritesheet/donuts_sheet.png");
-
-    let mut donuts_atlas = TextureAtlas::new_empty(donuts_texture.clone(), Vec2::new(1024., 2048.));
+    let mut donuts_atlas = TextureAtlas::new_empty(donuts_texture, Vec2::new(1024., 2048.));
     for SubTexture {
         x,
         y,
@@ -46,128 +50,17 @@ fn load_assets(
         });
     }
 
-    let donuts_atlas_handle = texture_atlases.add(donuts_atlas);
+    commands.insert_resource(Handles {
+        donuts_atlas: texture_atlases.add(donuts_atlas),
+    });
 
     commands.spawn_bundle(Camera2dBundle::default());
 
+    // @TODO: spawn customer somewhere else
     commands
-        .spawn_bundle(SpatialBundle::default())
-        .with_children(|parent| {
-            parent
-                .spawn_bundle(SpriteSheetBundle {
-                    texture_atlas: donuts_atlas_handle.clone(),
-                    sprite: TextureAtlasSprite {
-                        index: Base::START_SPRITE_INDEX,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .insert(Base(0));
-
-            parent
-                .spawn_bundle(SpriteSheetBundle {
-                    texture_atlas: donuts_atlas_handle.clone(),
-                    sprite: TextureAtlasSprite {
-                        index: Glazing::START_SPRITE_INDEX,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .insert(Glazing(0));
-
-            parent
-                .spawn_bundle(SpriteSheetBundle {
-                    texture_atlas: donuts_atlas_handle.clone(),
-                    sprite: TextureAtlasSprite {
-                        index: Sprinkles::START_SPRITE_INDEX,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
-                .insert(Sprinkles(0));
-        });
-}
-
-fn change_donut(
-    keys: Res<Input<KeyCode>>,
-    mut bases: Query<&mut Base>,
-    mut glazings: Query<&mut Glazing>,
-    mut sprinkles: Query<&mut Sprinkles>,
-    mut stripes: Query<&mut Stripes>,
-) {
-    for mut base in bases.iter_mut() {
-        if keys.just_pressed(KeyCode::Right) {
-            base.cycle_right();
-        }
-
-        if keys.just_pressed(KeyCode::Left) {
-            base.cycle_left();
-        }
-
-        if keys.just_pressed(KeyCode::Key2) {
-            base.cycle_right();
-        }
-
-        if keys.just_pressed(KeyCode::Key1) {
-            base.cycle_left();
-        }
-    }
-
-    for mut glazing in glazings.iter_mut() {
-        if keys.just_pressed(KeyCode::W) {
-            glazing.cycle_right();
-        }
-
-        if keys.just_pressed(KeyCode::Q) {
-            glazing.cycle_left();
-        }
-    }
-
-    for mut sprinkle in sprinkles.iter_mut() {
-        if keys.just_pressed(KeyCode::S) {
-            sprinkle.cycle_right();
-        }
-
-        if keys.just_pressed(KeyCode::A) {
-            sprinkle.cycle_left();
-        }
-    }
-
-    for mut stripe in stripes.iter_mut() {
-        if keys.just_pressed(KeyCode::X) {
-            stripe.cycle_right();
-        }
-
-        if keys.just_pressed(KeyCode::Z) {
-            stripe.cycle_left();
-        }
-    }
-}
-
-fn update_base_sprite(mut query: Query<(&Base, &mut TextureAtlasSprite), Changed<Base>>) {
-    for (base, mut sprite) in query.iter_mut() {
-        sprite.index = base.to_sprite_index();
-    }
-}
-
-fn update_glazing_sprite(mut query: Query<(&Glazing, &mut TextureAtlasSprite), Changed<Glazing>>) {
-    for (glazing, mut sprite) in query.iter_mut() {
-        sprite.index = glazing.to_sprite_index();
-    }
-}
-
-fn update_sprinkles_sprite(
-    mut query: Query<(&Sprinkles, &mut TextureAtlasSprite), Changed<Sprinkles>>,
-) {
-    for (sprinkles, mut sprite) in query.iter_mut() {
-        sprite.index = sprinkles.to_sprite_index();
-    }
-}
-
-fn update_stripes_sprite(mut query: Query<(&Stripes, &mut TextureAtlasSprite), Changed<Stripes>>) {
-    for (stripes, mut sprite) in query.iter_mut() {
-        sprite.index = stripes.to_sprite_index();
-    }
+        .spawn()
+        .insert(component::Taste::random())
+        .insert(component::CurrentCustomer);
 }
 
 // I was too lazy to load and parse XML
