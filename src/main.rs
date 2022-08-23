@@ -1,4 +1,7 @@
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
+use bevy_common_assets::json::JsonAssetPlugin;
+use serde;
 
 mod component;
 mod system;
@@ -6,48 +9,126 @@ mod system;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_startup_system(load_assets)
-        .add_system(system::change_cooking_donut)
-        .add_system(system::update_base_sprite)
-        .add_system(system::update_glazing_sprite)
-        .add_system(system::update_sprinkles_sprite)
-        .add_system(system::cook_another_donut)
-        .add_system(system::offer_cooked_donut)
+        .add_plugin(JsonAssetPlugin::<TextureAtlasData>::new(&["atlas.json"]))
+        .add_loading_state(
+            LoadingState::new(GameState::AssetLoading)
+                .continue_to_state(GameState::InGame)
+                .with_collection::<MyAssets>(),
+        )
+        .add_state(GameState::AssetLoading)
+        .add_system_set(SystemSet::on_enter(GameState::InGame).with_system(init_assets))
+        .add_system_set(
+            SystemSet::on_update(GameState::InGame)
+                .with_system(system::change_cooking_donut)
+                .with_system(system::update_base_sprite)
+                .with_system(system::update_glazing_sprite)
+                .with_system(system::update_sprinkles_sprite)
+                .with_system(system::cook_another_donut)
+                .with_system(system::offer_cooked_donut),
+        )
         .run();
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+enum GameState {
+    AssetLoading,
+    InGame,
+}
+
+#[derive(AssetCollection)]
+struct MyAssets {
+    #[asset(path = "Donuts/Spritesheet/donuts_sheet.png")]
+    donuts_texture: Handle<Image>,
+    #[asset(path = "Donuts/Spritesheet/donuts_sheet.atlas.json")]
+    donuts_texture_data: Handle<TextureAtlasData>,
 }
 
 pub struct Handles {
     donuts_atlas: Handle<TextureAtlas>,
 }
 
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid)]
+#[uuid = "c16f5026-27f4-4a38-902e-619a2da113bc"]
+struct TextureAtlasData {
+    #[serde(rename(deserialize = "TextureAtlas"))]
+    texture_atlas: TextureAtlasObject,
+}
+
+#[derive(serde::Deserialize, bevy::reflect::TypeUuid)]
+#[uuid = "39193fb7-499d-4698-8b49-d1886ac0754c"]
+struct TextureAtlasObject {
+    #[serde(rename(deserialize = "SubTexture"))]
+    sub_textures: Vec<SubTexture>,
+}
+
+#[derive(bevy::reflect::TypeUuid)]
+#[uuid = "89ce27f6-46d4-4e27-83f6-0ffdc2ad6cf2"]
 struct SubTexture {
     #[allow(dead_code)]
-    name: &'static str,
+    name: String,
     x: i32,
     y: i32,
     width: i32,
     height: i32,
 }
 
-fn load_assets(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-) {
-    let donuts_texture: Handle<Image> = asset_server.load("Donuts/Spritesheet/donuts_sheet.png");
-    let mut donuts_atlas = TextureAtlas::new_empty(donuts_texture, Vec2::new(1024., 2048.));
-    for SubTexture {
-        x,
-        y,
-        width,
-        height,
-        ..
-    } in ATLAS_DATA.into_iter()
+#[derive(serde::Deserialize)]
+struct SubTextureRaw {
+    #[allow(dead_code)]
+    name: String,
+    x: String,
+    y: String,
+    width: String,
+    height: String,
+}
+
+impl<'de> serde::Deserialize<'de> for SubTexture {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
     {
-        donuts_atlas.add_texture(bevy::sprite::Rect {
-            min: Vec2::new(x as f32, y as f32),
-            max: Vec2::new((x + width) as f32, (y + height) as f32),
-        });
+        let raw = SubTextureRaw::deserialize(deserializer)?;
+
+        let name = raw.name;
+        let x = raw.x.parse::<i32>().unwrap();
+        let y = raw.y.parse::<i32>().unwrap();
+        let width = raw.width.parse::<i32>().unwrap();
+        let height = raw.height.parse::<i32>().unwrap();
+
+        Ok(SubTexture {
+            name,
+            x,
+            y,
+            width,
+            height,
+        })
+    }
+}
+
+fn init_assets(
+    mut commands: Commands,
+    my_assets: Res<MyAssets>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    texture_atlas_data_assets: Res<Assets<TextureAtlasData>>,
+) {
+    let mut donuts_atlas =
+        TextureAtlas::new_empty(my_assets.donuts_texture.clone(), Vec2::new(1024., 2048.));
+
+    if let Some(donuts_texture_data) = texture_atlas_data_assets.get(&my_assets.donuts_texture_data)
+    {
+        for SubTexture {
+            x,
+            y,
+            width,
+            height,
+            ..
+        } in donuts_texture_data.texture_atlas.sub_textures.iter()
+        {
+            donuts_atlas.add_texture(bevy::sprite::Rect {
+                min: Vec2::new(*x as f32, *y as f32),
+                max: Vec2::new((x + width) as f32, (y + height) as f32),
+            });
+        }
     }
 
     commands.insert_resource(Handles {
@@ -62,161 +143,3 @@ fn load_assets(
         .insert(component::Taste::random())
         .insert(component::CurrentCustomer);
 }
-
-// I was too lazy to load and parse XML
-const ATLAS_DATA: [SubTexture; 22] = [
-    SubTexture {
-        name: "donut_1.png",
-        x: 0,
-        y: 0,
-        width: 264,
-        height: 264,
-    },
-    SubTexture {
-        name: "donut_2.png",
-        x: 0,
-        y: 528,
-        width: 264,
-        height: 264,
-    },
-    SubTexture {
-        name: "donut_3.png",
-        x: 0,
-        y: 264,
-        width: 264,
-        height: 264,
-    },
-    SubTexture {
-        name: "glazing_1.png",
-        x: 226,
-        y: 1668,
-        width: 226,
-        height: 226,
-    },
-    SubTexture {
-        name: "glazing_2.png",
-        x: 229,
-        y: 1244,
-        width: 226,
-        height: 226,
-    },
-    SubTexture {
-        name: "glazing_3.png",
-        x: 229,
-        y: 792,
-        width: 226,
-        height: 226,
-    },
-    SubTexture {
-        name: "glazing_4.png",
-        x: 264,
-        y: 226,
-        width: 226,
-        height: 226,
-    },
-    SubTexture {
-        name: "glazing_5.png",
-        x: 229,
-        y: 1018,
-        width: 226,
-        height: 226,
-    },
-    SubTexture {
-        name: "glazing_6.png",
-        x: 264,
-        y: 452,
-        width: 226,
-        height: 226,
-    },
-    SubTexture {
-        name: "glazing_zigzag_1.png",
-        x: 0,
-        y: 1230,
-        width: 229,
-        height: 219,
-    },
-    SubTexture {
-        name: "glazing_zigzag_2.png",
-        x: 0,
-        y: 1011,
-        width: 229,
-        height: 219,
-    },
-    SubTexture {
-        name: "glazing_zigzag_3.png",
-        x: 0,
-        y: 1449,
-        width: 229,
-        height: 219,
-    },
-    SubTexture {
-        name: "glazing_zigzag_4.png",
-        x: 0,
-        y: 792,
-        width: 229,
-        height: 219,
-    },
-    SubTexture {
-        name: "sprinkles_1.png",
-        x: 455,
-        y: 888,
-        width: 195,
-        height: 210,
-    },
-    SubTexture {
-        name: "sprinkles_2.png",
-        x: 455,
-        y: 678,
-        width: 195,
-        height: 210,
-    },
-    SubTexture {
-        name: "sprinkles_3.png",
-        x: 452,
-        y: 1664,
-        width: 202,
-        height: 221,
-    },
-    SubTexture {
-        name: "sprinkles_4.png",
-        x: 455,
-        y: 1098,
-        width: 195,
-        height: 210,
-    },
-    SubTexture {
-        name: "sprinkles_5.png",
-        x: 490,
-        y: 0,
-        width: 195,
-        height: 210,
-    },
-    SubTexture {
-        name: "stripes_1.png",
-        x: 435,
-        y: 1470,
-        width: 206,
-        height: 194,
-    },
-    SubTexture {
-        name: "stripes_2.png",
-        x: 229,
-        y: 1470,
-        width: 206,
-        height: 194,
-    },
-    SubTexture {
-        name: "stripes_3.png",
-        x: 264,
-        y: 0,
-        width: 226,
-        height: 226,
-    },
-    SubTexture {
-        name: "stripes_4.png",
-        x: 0,
-        y: 1668,
-        width: 226,
-        height: 226,
-    },
-];

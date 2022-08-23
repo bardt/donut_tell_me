@@ -141,14 +141,12 @@ fn test_donut_ranking() {
     };
 
     let no_taste = Taste::default();
-
     assert_eq!(no_taste.rank(&donut), 0);
 
     let mut exact_taste = Taste::default();
     exact_taste.bases[0] = 5;
     exact_taste.glazing[0] = 5;
     exact_taste.sprinkles[0] = 5;
-
     assert_eq!(exact_taste.rank(&donut), 5);
 }
 
