@@ -1,0 +1,904 @@
+{
+  "TextureAtlas": {
+    "-imagePath": "sheet.png",
+    "SubTexture": [
+      {
+        "-name": "blackMan1.png",
+        "-x": "979",
+        "-y": "524",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackMan2.png",
+        "-x": "1454",
+        "-y": "119",
+        "-width": "158",
+        "-height": "138",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackMan3.png",
+        "-x": "1454",
+        "-y": "1381",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackMan4.png",
+        "-x": "1454",
+        "-y": "1262",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackMan5.png",
+        "-x": "0",
+        "-y": "910",
+        "-width": "171",
+        "-height": "130",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackMan6.png",
+        "-x": "1454",
+        "-y": "0",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackMan7.png",
+        "-x": "1453",
+        "-y": "1922",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackMan8.png",
+        "-x": "821",
+        "-y": "405",
+        "-width": "158",
+        "-height": "47",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackWoman1.png",
+        "-x": "171",
+        "-y": "454",
+        "-width": "165",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackWoman2.png",
+        "-x": "1453",
+        "-y": "1637",
+        "-width": "158",
+        "-height": "285",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackWoman3.png",
+        "-x": "501",
+        "-y": "227",
+        "-width": "160",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackWoman4.png",
+        "-x": "1298",
+        "-y": "690",
+        "-width": "158",
+        "-height": "286",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackWoman5.png",
+        "-x": "168",
+        "-y": "1466",
+        "-width": "168",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blackWoman6.png",
+        "-x": "336",
+        "-y": "908",
+        "-width": "164",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeMan1.png",
+        "-x": "823",
+        "-y": "1087",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeMan2.png",
+        "-x": "979",
+        "-y": "1206",
+        "-width": "159",
+        "-height": "138",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeMan3.png",
+        "-x": "979",
+        "-y": "1344",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeMan4.png",
+        "-x": "979",
+        "-y": "1463",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeMan5.png",
+        "-x": "0",
+        "-y": "260",
+        "-width": "171",
+        "-height": "130",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeMan6.png",
+        "-x": "979",
+        "-y": "1582",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeMan7.png",
+        "-x": "979",
+        "-y": "1701",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeMan8.png",
+        "-x": "634",
+        "-y": "2001",
+        "-width": "158",
+        "-height": "47",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeWoman1.png",
+        "-x": "1296",
+        "-y": "1114",
+        "-width": "158",
+        "-height": "285",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeWoman2.png",
+        "-x": "501",
+        "-y": "0",
+        "-width": "160",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeWoman3.png",
+        "-x": "1295",
+        "-y": "404",
+        "-width": "158",
+        "-height": "286",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeWoman4.png",
+        "-x": "336",
+        "-y": "227",
+        "-width": "165",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeWoman5.png",
+        "-x": "336",
+        "-y": "1334",
+        "-width": "164",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "blondeWoman6.png",
+        "-x": "168",
+        "-y": "1040",
+        "-width": "168",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Man1.png",
+        "-x": "1138",
+        "-y": "1590",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Man2.png",
+        "-x": "1138",
+        "-y": "1452",
+        "-width": "158",
+        "-height": "138",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Man3.png",
+        "-x": "1137",
+        "-y": "1820",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Man4.png",
+        "-x": "1296",
+        "-y": "119",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Man5.png",
+        "-x": "0",
+        "-y": "650",
+        "-width": "171",
+        "-height": "130",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Man6.png",
+        "-x": "1295",
+        "-y": "1828",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Man7.png",
+        "-x": "982",
+        "-y": "1047",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Man8.png",
+        "-x": "476",
+        "-y": "2001",
+        "-width": "158",
+        "-height": "47",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Woman1.png",
+        "-x": "982",
+        "-y": "762",
+        "-width": "158",
+        "-height": "285",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Woman2.png",
+        "-x": "661",
+        "-y": "0",
+        "-width": "160",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Woman3.png",
+        "-x": "1137",
+        "-y": "405",
+        "-width": "158",
+        "-height": "286",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Woman4.png",
+        "-x": "336",
+        "-y": "0",
+        "-width": "165",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Woman5.png",
+        "-x": "500",
+        "-y": "1121",
+        "-width": "164",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown1Woman6.png",
+        "-x": "0",
+        "-y": "1040",
+        "-width": "168",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Man1.png",
+        "-x": "979",
+        "-y": "405",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Man2.png",
+        "-x": "979",
+        "-y": "1820",
+        "-width": "158",
+        "-height": "138",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Man3.png",
+        "-x": "980",
+        "-y": "0",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Man4.png",
+        "-x": "979",
+        "-y": "643",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Man5.png",
+        "-x": "0",
+        "-y": "130",
+        "-width": "171",
+        "-height": "130",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Man6.png",
+        "-x": "1296",
+        "-y": "1399",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Man7.png",
+        "-x": "1296",
+        "-y": "0",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Man8.png",
+        "-x": "661",
+        "-y": "1952",
+        "-width": "158",
+        "-height": "47",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Woman1.png",
+        "-x": "1140",
+        "-y": "829",
+        "-width": "158",
+        "-height": "285",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Woman2.png",
+        "-x": "661",
+        "-y": "227",
+        "-width": "160",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Woman3.png",
+        "-x": "1138",
+        "-y": "1166",
+        "-width": "158",
+        "-height": "286",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Woman4.png",
+        "-x": "336",
+        "-y": "454",
+        "-width": "165",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Woman5.png",
+        "-x": "500",
+        "-y": "1334",
+        "-width": "164",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "brown2Woman6.png",
+        "-x": "0",
+        "-y": "1466",
+        "-width": "168",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyMan1.png",
+        "-x": "823",
+        "-y": "968",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyMan2.png",
+        "-x": "820",
+        "-y": "1857",
+        "-width": "159",
+        "-height": "138",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyMan3.png",
+        "-x": "820",
+        "-y": "1738",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyMan4.png",
+        "-x": "820",
+        "-y": "1619",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyMan5.png",
+        "-x": "0",
+        "-y": "390",
+        "-width": "171",
+        "-height": "130",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyMan6.png",
+        "-x": "664",
+        "-y": "1215",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyMan7.png",
+        "-x": "664",
+        "-y": "1096",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyMan8.png",
+        "-x": "318",
+        "-y": "2001",
+        "-width": "158",
+        "-height": "47",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyWoman1.png",
+        "-x": "1138",
+        "-y": "0",
+        "-width": "158",
+        "-height": "285",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyWoman2.png",
+        "-x": "501",
+        "-y": "454",
+        "-width": "160",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyWoman3.png",
+        "-x": "980",
+        "-y": "119",
+        "-width": "158",
+        "-height": "286",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyWoman4.png",
+        "-x": "336",
+        "-y": "681",
+        "-width": "165",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyWoman5.png",
+        "-x": "336",
+        "-y": "1760",
+        "-width": "164",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "greyWoman6.png",
+        "-x": "168",
+        "-y": "1253",
+        "-width": "168",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redMan1.png",
+        "-x": "664",
+        "-y": "858",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redMan2.png",
+        "-x": "823",
+        "-y": "830",
+        "-width": "159",
+        "-height": "138",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redMan3.png",
+        "-x": "821",
+        "-y": "286",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redMan4.png",
+        "-x": "664",
+        "-y": "977",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redMan5.png",
+        "-x": "0",
+        "-y": "780",
+        "-width": "171",
+        "-height": "130",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redMan6.png",
+        "-x": "159",
+        "-y": "1892",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redMan7.png",
+        "-x": "661",
+        "-y": "1833",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redMan8.png",
+        "-x": "792",
+        "-y": "1999",
+        "-width": "158",
+        "-height": "47",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redWoman1.png",
+        "-x": "661",
+        "-y": "454",
+        "-width": "159",
+        "-height": "285",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redWoman2.png",
+        "-x": "500",
+        "-y": "1547",
+        "-width": "161",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redWoman3.png",
+        "-x": "661",
+        "-y": "1547",
+        "-width": "159",
+        "-height": "286",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redWoman4.png",
+        "-x": "171",
+        "-y": "681",
+        "-width": "165",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redWoman5.png",
+        "-x": "500",
+        "-y": "908",
+        "-width": "164",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "redWoman6.png",
+        "-x": "0",
+        "-y": "1679",
+        "-width": "168",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanMan1.png",
+        "-x": "1138",
+        "-y": "285",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanMan2.png",
+        "-x": "1140",
+        "-y": "691",
+        "-width": "158",
+        "-height": "138",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanMan3.png",
+        "-x": "1454",
+        "-y": "257",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanMan4.png",
+        "-x": "1295",
+        "-y": "1709",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanMan5.png",
+        "-x": "0",
+        "-y": "520",
+        "-width": "171",
+        "-height": "130",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanMan6.png",
+        "-x": "1296",
+        "-y": "1518",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanMan7.png",
+        "-x": "1296",
+        "-y": "238",
+        "-width": "158",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanMan8.png",
+        "-x": "1296",
+        "-y": "357",
+        "-width": "158",
+        "-height": "47",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanWoman1.png",
+        "-x": "1453",
+        "-y": "404",
+        "-width": "158",
+        "-height": "285",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanWoman2.png",
+        "-x": "501",
+        "-y": "681",
+        "-width": "160",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanWoman3.png",
+        "-x": "168",
+        "-y": "1679",
+        "-width": "168",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanWoman4.png",
+        "-x": "1454",
+        "-y": "976",
+        "-width": "158",
+        "-height": "286",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanWoman5.png",
+        "-x": "171",
+        "-y": "0",
+        "-width": "165",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "tanWoman6.png",
+        "-x": "336",
+        "-y": "1121",
+        "-width": "164",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteMan1.png",
+        "-x": "171",
+        "-y": "908",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteMan2.png",
+        "-x": "820",
+        "-y": "692",
+        "-width": "159",
+        "-height": "138",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteMan3.png",
+        "-x": "820",
+        "-y": "573",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteMan4.png",
+        "-x": "661",
+        "-y": "739",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteMan5.png",
+        "-x": "0",
+        "-y": "0",
+        "-width": "171",
+        "-height": "130",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteMan6.png",
+        "-x": "0",
+        "-y": "1892",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteMan7.png",
+        "-x": "820",
+        "-y": "454",
+        "-width": "159",
+        "-height": "119",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteMan8.png",
+        "-x": "950",
+        "-y": "1995",
+        "-width": "158",
+        "-height": "47",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteWoman1.png",
+        "-x": "820",
+        "-y": "1334",
+        "-width": "159",
+        "-height": "285",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteWoman2.png",
+        "-x": "500",
+        "-y": "1774",
+        "-width": "161",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteWoman3.png",
+        "-x": "821",
+        "-y": "0",
+        "-width": "159",
+        "-height": "286",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteWoman4.png",
+        "-x": "171",
+        "-y": "227",
+        "-width": "165",
+        "-height": "227",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteWoman5.png",
+        "-x": "336",
+        "-y": "1547",
+        "-width": "164",
+        "-height": "213",
+        "-self-closing": "true"
+      },
+      {
+        "-name": "whiteWoman6.png",
+        "-x": "0",
+        "-y": "1253",
+        "-width": "168",
+        "-height": "213",
+        "-self-closing": "true"
+      }
+    ]
+  },
+  "#omit-xml-declaration": "yes"
+}

@@ -83,7 +83,10 @@ pub fn cook_another_donut(
         }
 
         commands
-            .spawn_bundle(SpatialBundle::default())
+            .spawn_bundle(SpatialBundle {
+                transform: Transform::from_translation(Vec3::new(0., -150., 0.)),
+                ..default()
+            })
             .insert(CookingDonut)
             .with_children(|parent| {
                 parent
