@@ -3,71 +3,116 @@ use bevy::prelude::*;
 
 pub fn change_cooking_donut(
     keys: Res<Input<KeyCode>>,
-    mut bases: Query<(&mut Base, &Parent)>,
-    mut glazings: Query<(&mut Glazing, &Parent)>,
-    mut sprinkles: Query<(&mut Sprinkles, &Parent)>,
 
-    cooking_donut: Query<Entity, With<CookingDonut>>,
+    mut cooking_donut: Query<
+        (&mut Base, &mut Glazing, &mut Sprinkles),
+        (With<CookingDonut>, With<Donut>),
+    >,
 ) {
-    for (mut base, parent) in bases.iter_mut() {
-        if cooking_donut.contains(parent.get()) {
-            if keys.just_pressed(KeyCode::Right) {
-                base.cycle_right();
-            }
-            if keys.just_pressed(KeyCode::Left) {
-                base.cycle_left();
-            }
-            if keys.just_pressed(KeyCode::W) {
-                base.cycle_right();
-            }
-            if keys.just_pressed(KeyCode::Q) {
-                base.cycle_left();
-            }
+    for (mut base, mut glazing, mut sprinkles) in cooking_donut.iter_mut() {
+        if keys.just_pressed(KeyCode::Right) {
+            base.cycle_right();
         }
-    }
-
-    for (mut glazing, parent) in glazings.iter_mut() {
-        if cooking_donut.contains(parent.get()) {
-            if keys.just_pressed(KeyCode::S) {
-                glazing.cycle_right();
-            }
-            if keys.just_pressed(KeyCode::A) {
-                glazing.cycle_left();
-            }
+        if keys.just_pressed(KeyCode::Left) {
+            base.cycle_left();
         }
-    }
+        if keys.just_pressed(KeyCode::W) {
+            base.cycle_right();
+        }
+        if keys.just_pressed(KeyCode::Q) {
+            base.cycle_left();
+        }
 
-    for (mut sprinkle, parent) in sprinkles.iter_mut() {
-        if cooking_donut.contains(parent.get()) {
-            if keys.just_pressed(KeyCode::X) {
-                sprinkle.cycle_right();
-            }
-            if keys.just_pressed(KeyCode::Z) {
-                sprinkle.cycle_left();
-            }
+        if keys.just_pressed(KeyCode::S) {
+            glazing.cycle_right();
+        }
+        if keys.just_pressed(KeyCode::A) {
+            glazing.cycle_left();
+        }
+
+        if keys.just_pressed(KeyCode::X) {
+            sprinkles.cycle_right();
+        }
+        if keys.just_pressed(KeyCode::Z) {
+            sprinkles.cycle_left();
         }
     }
 }
 
-pub fn update_base_sprite(mut query: Query<(&Base, &mut TextureAtlasSprite), Changed<Base>>) {
-    for (base, mut sprite) in query.iter_mut() {
-        sprite.index = base.to_sprite_index();
+pub fn add_donut_sprites(
+    mut commands: Commands,
+    added_donuts: Query<(Entity, &Base, &Glazing, &Sprinkles), Added<Donut>>,
+    handles: Res<crate::Handles>,
+) {
+    for (entity, base, glazing, sprinkles) in added_donuts.iter() {
+        commands.entity(entity).with_children(|parent| {
+            parent
+                .spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: handles.donuts_atlas.clone(),
+                    sprite: TextureAtlasSprite {
+                        index: base.to_sprite_index(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert(*base);
+
+            parent
+                .spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: handles.donuts_atlas.clone(),
+                    sprite: TextureAtlasSprite {
+                        index: glazing.to_sprite_index(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert(*glazing);
+
+            parent
+                .spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: handles.donuts_atlas.clone(),
+                    sprite: TextureAtlasSprite {
+                        index: sprinkles.to_sprite_index(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert(*sprinkles);
+        });
     }
 }
 
-pub fn update_glazing_sprite(
-    mut query: Query<(&Glazing, &mut TextureAtlasSprite), Changed<Glazing>>,
+pub fn update_donut_sprites(
+    changed_donuts: Query<
+        (&Children, &Base, &Glazing, &Sprinkles),
+        (
+            With<Donut>,
+            Or<(Changed<Base>, Changed<Glazing>, Changed<Sprinkles>)>,
+        ),
+    >,
+    mut set: ParamSet<(
+        Query<(&mut Base, &mut TextureAtlasSprite), Without<Donut>>,
+        Query<(&mut Glazing, &mut TextureAtlasSprite), Without<Donut>>,
+        Query<(&mut Sprinkles, &mut TextureAtlasSprite), Without<Donut>>,
+    )>,
 ) {
-    for (glazing, mut sprite) in query.iter_mut() {
-        sprite.index = glazing.to_sprite_index();
-    }
-}
+    for (children, parent_base, parent_glazing, parent_sprinkles) in changed_donuts.iter() {
+        for &child in children.iter() {
+            if let Ok((mut child_base, mut sprite)) = set.p0().get_mut(child) {
+                *child_base = *parent_base;
+                sprite.index = child_base.to_sprite_index();
+            }
 
-pub fn update_sprinkles_sprite(
-    mut query: Query<(&Sprinkles, &mut TextureAtlasSprite), Changed<Sprinkles>>,
-) {
-    for (sprinkles, mut sprite) in query.iter_mut() {
-        sprite.index = sprinkles.to_sprite_index();
+            if let Ok((mut child_glazing, mut sprite)) = set.p1().get_mut(child) {
+                *child_glazing = *parent_glazing;
+                sprite.index = child_glazing.to_sprite_index();
+            }
+
+            if let Ok((mut child_sprinkles, mut sprite)) = set.p2().get_mut(child) {
+                *child_sprinkles = *parent_sprinkles;
+                sprite.index = child_sprinkles.to_sprite_index();
+            }
+        }
     }
 }
 
@@ -75,7 +120,6 @@ pub fn cook_another_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
     cooking_donut: Query<Entity, With<CookingDonut>>,
-    handles: Res<crate::Handles>,
 ) {
     if keys.just_pressed(KeyCode::N) {
         if let Ok(cooking_donut) = cooking_donut.get_single() {
@@ -83,45 +127,13 @@ pub fn cook_another_donut(
         }
 
         commands
-            .spawn_bundle(SpatialBundle {
-                transform: Transform::from_translation(Vec3::new(0., -150., 0.)),
-                ..default()
+            .spawn_bundle(DonutBundle {
+                spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
+                    0., -150., 0.,
+                ))),
+                ..Default::default()
             })
-            .insert(CookingDonut)
-            .with_children(|parent| {
-                parent
-                    .spawn_bundle(SpriteSheetBundle {
-                        texture_atlas: handles.donuts_atlas.clone(),
-                        sprite: TextureAtlasSprite {
-                            index: Base::START_SPRITE_INDEX,
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    })
-                    .insert(Base(0));
-
-                parent
-                    .spawn_bundle(SpriteSheetBundle {
-                        texture_atlas: handles.donuts_atlas.clone(),
-                        sprite: TextureAtlasSprite {
-                            index: Glazing::START_SPRITE_INDEX,
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    })
-                    .insert(Glazing(0));
-
-                parent
-                    .spawn_bundle(SpriteSheetBundle {
-                        texture_atlas: handles.donuts_atlas.clone(),
-                        sprite: TextureAtlasSprite {
-                            index: Sprinkles::START_SPRITE_INDEX,
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    })
-                    .insert(Sprinkles(0));
-            });
+            .insert(CookingDonut);
     }
 }
 
@@ -164,6 +176,7 @@ pub fn offer_cooked_donut(
                     base,
                     glazing,
                     sprinkles,
+                    ..Default::default()
                 };
                 let donut_rank = taste.rank(&donut);
 

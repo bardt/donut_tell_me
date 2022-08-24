@@ -12,7 +12,7 @@ pub trait ToSpriteIndex {
     fn cycle_left(&mut self) -> &mut Self;
 }
 
-#[derive(Component, PartialEq, Eq, Debug, Copy, Clone)]
+#[derive(Component, PartialEq, Eq, Debug, Copy, Clone, Default)]
 pub struct Base(pub usize);
 
 impl ToSpriteIndex for Base {
@@ -44,7 +44,7 @@ fn test_base_cycling() {
     assert_eq!(base.cycle_right(), &Base(0));
 }
 
-#[derive(Component, Copy, Clone)]
+#[derive(Component, Copy, Clone, Default)]
 pub struct Glazing(pub usize);
 
 impl ToSpriteIndex for Glazing {
@@ -66,7 +66,8 @@ impl ToSpriteIndex for Glazing {
     }
 }
 
-#[derive(Component, Copy, Clone)]
+
+#[derive(Component, Copy, Clone, Default)]
 pub struct Sprinkles(pub usize);
 
 impl ToSpriteIndex for Sprinkles {
@@ -88,10 +89,18 @@ impl ToSpriteIndex for Sprinkles {
     }
 }
 
+#[derive(Component, Default)]
+pub struct Donut;
+
+#[derive(Bundle, Default)]
 pub struct DonutBundle {
+    pub donut: Donut,
     pub base: Base,
     pub glazing: Glazing,
     pub sprinkles: Sprinkles,
+
+    #[bundle]
+    pub spatial: SpatialBundle
 }
 
 #[derive(Component)]
@@ -134,11 +143,7 @@ impl Taste {
 
 #[test]
 fn test_donut_ranking() {
-    let donut = DonutBundle {
-        base: Base(0),
-        glazing: Glazing(0),
-        sprinkles: Sprinkles(0),
-    };
+    let donut = DonutBundle::default();
 
     let no_taste = Taste::default();
     assert_eq!(no_taste.rank(&donut), 0);

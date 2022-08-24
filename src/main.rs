@@ -22,10 +22,9 @@ fn main() {
         .add_system_set(SystemSet::on_enter(GameState::InGame).with_system(init_assets))
         .add_system_set(
             SystemSet::on_update(GameState::InGame)
+                .with_system(system::add_donut_sprites)
                 .with_system(system::change_cooking_donut)
-                .with_system(system::update_base_sprite)
-                .with_system(system::update_glazing_sprite)
-                .with_system(system::update_sprinkles_sprite)
+                .with_system(system::update_donut_sprites)
                 .with_system(system::cook_another_donut)
                 .with_system(system::offer_cooked_donut),
         )
