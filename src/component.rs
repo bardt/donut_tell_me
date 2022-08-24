@@ -66,7 +66,6 @@ impl ToSpriteIndex for Glazing {
     }
 }
 
-
 #[derive(Component, Copy, Clone, Default)]
 pub struct Sprinkles(pub usize);
 
@@ -100,7 +99,7 @@ pub struct DonutBundle {
     pub sprinkles: Sprinkles,
 
     #[bundle]
-    pub spatial: SpatialBundle
+    pub spatial: SpatialBundle,
 }
 
 #[derive(Component)]
@@ -114,10 +113,10 @@ pub struct Taste {
 }
 
 impl Taste {
-    pub fn rank(&self, donut: &DonutBundle) -> usize {
-        let base_rank = self.bases[donut.base.0];
-        let glazing_rank = self.glazing[donut.glazing.0];
-        let sprinkles_rank = self.sprinkles[donut.sprinkles.0];
+    pub fn rank(&self, base: &Base, glazing: &Glazing, sprinkles: &Sprinkles) -> usize {
+        let base_rank = self.bases[base.0];
+        let glazing_rank = self.glazing[glazing.0];
+        let sprinkles_rank = self.sprinkles[sprinkles.0];
 
         // @TODO: adjust the formula
         let total_rank: usize = (base_rank + glazing_rank + sprinkles_rank) / 3;
@@ -146,14 +145,42 @@ fn test_donut_ranking() {
     let donut = DonutBundle::default();
 
     let no_taste = Taste::default();
-    assert_eq!(no_taste.rank(&donut), 0);
+    assert_eq!(
+        no_taste.rank(&donut.base, &donut.glazing, &donut.sprinkles),
+        0
+    );
 
     let mut exact_taste = Taste::default();
     exact_taste.bases[0] = 5;
     exact_taste.glazing[0] = 5;
     exact_taste.sprinkles[0] = 5;
-    assert_eq!(exact_taste.rank(&donut), 5);
+    assert_eq!(
+        exact_taste.rank(&donut.base, &donut.glazing, &donut.sprinkles),
+        5
+    );
 }
 
 #[derive(Component)]
 pub struct CurrentCustomer;
+
+#[derive(Component, Default)]
+pub struct SalesLog;
+
+#[derive(Bundle)]
+pub struct SalesLogBundle {
+    pub sales_log: SalesLog,
+    pub children: Children,
+
+    #[bundle]
+    pub spatial: SpatialBundle,
+}
+
+impl Default for SalesLogBundle {
+    fn default() -> Self {
+        Self {
+            sales_log: SalesLog,
+            children: Children::with(&[]),
+            spatial: SpatialBundle::default(),
+        }
+    }
+}

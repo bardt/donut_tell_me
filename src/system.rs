@@ -128,9 +128,10 @@ pub fn cook_another_donut(
 
         commands
             .spawn_bundle(DonutBundle {
-                spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
-                    0., -150., 0.,
-                ))),
+                spatial: SpatialBundle::from_transform(
+                    Transform::from_translation(Vec3::new(0., -150., 0.))
+                        .with_scale(Vec3::ONE * 0.5),
+                ),
                 ..Default::default()
             })
             .insert(CookingDonut);
@@ -138,49 +139,34 @@ pub fn cook_another_donut(
 }
 
 pub fn offer_cooked_donut(
+    mut commands: Commands,
     keys: Res<Input<KeyCode>>,
-    cooking_donut: Query<Entity, With<CookingDonut>>,
+    cooking_donut: Query<(&Base, &Glazing, &Sprinkles), With<CookingDonut>>,
     customer: Query<&Taste, With<CurrentCustomer>>,
-    bases: Query<(&Base, &Parent)>,
-    glazings: Query<(&Glazing, &Parent)>,
-    sprinkles: Query<(&Sprinkles, &Parent)>,
+    log: Query<(Entity, &Children), With<SalesLog>>,
 ) {
     if keys.just_pressed(KeyCode::Return) {
         if let Ok(taste) = customer.get_single() {
-            let base: Option<Base> = bases.iter().find_map(|(part, parent)| {
-                if cooking_donut.contains(parent.get()) {
-                    Some(*part)
-                } else {
-                    None
-                }
-            });
-
-            let glazing: Option<Glazing> = glazings.iter().find_map(|(part, parent)| {
-                if cooking_donut.contains(parent.get()) {
-                    Some(*part)
-                } else {
-                    None
-                }
-            });
-
-            let sprinkles: Option<Sprinkles> = sprinkles.iter().find_map(|(part, parent)| {
-                if cooking_donut.contains(parent.get()) {
-                    Some(*part)
-                } else {
-                    None
-                }
-            });
-
-            if let (Some(base), Some(glazing), Some(sprinkles)) = (base, glazing, sprinkles) {
-                let donut = DonutBundle {
-                    base,
-                    glazing,
-                    sprinkles,
-                    ..Default::default()
-                };
-                let donut_rank = taste.rank(&donut);
+            if let Ok((base, glazing, sprinkles)) = cooking_donut.get_single() {
+                let donut_rank = taste.rank(base, glazing, sprinkles);
 
                 println!("I rate this donut as {}", "⭐️".repeat(donut_rank));
+
+                for (log, entries) in log.iter() {
+                    let new_entry = commands
+                        .spawn_bundle(DonutBundle {
+                            base: *base,
+                            glazing: *glazing,
+                            sprinkles: *sprinkles,
+                            spatial: SpatialBundle::from_transform(
+                                Transform::from_xyz(0., 100. * entries.len() as f32, 0.)
+                                    .with_scale(Vec3::ONE * 0.3),
+                            ),
+                            ..Default::default()
+                        })
+                        .id();
+                    commands.entity(log).push_children(&[new_entry]);
+                }
             }
         }
     }

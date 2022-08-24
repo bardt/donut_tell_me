@@ -3,7 +3,6 @@ use bevy_asset_loader::prelude::*;
 use bevy_common_assets::json::JsonAssetPlugin;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use rand::prelude::*;
-use serde;
 
 mod component;
 mod system;
@@ -231,7 +230,14 @@ fn init_assets(
         });
 
     commands.insert_resource(handles);
-    commands.insert_resource(faces_metadata)
+    commands.insert_resource(faces_metadata);
+
+    commands.spawn_bundle(component::SalesLogBundle {
+        spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
+            150., 0., 0.,
+        ))),
+        ..Default::default()
+    });
 }
 
 // JSON converted from XML via https://javadev.github.io/xml-to-json/
