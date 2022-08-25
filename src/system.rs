@@ -1,9 +1,75 @@
+use crate::assets::*;
 use crate::component::*;
 use bevy::prelude::*;
+use bevy::sprite::Anchor;
+use rand::prelude::*;
 
+pub fn setup_game(
+    mut commands: Commands,
+    handles: Res<Handles>,
+    faces_metadata: Res<FacesMetadata>,
+) {
+    commands.spawn_bundle(Camera2dBundle::default());
+
+    let mut rng = rand::thread_rng();
+
+    commands.spawn_bundle(SalesLogBundle {
+        spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
+            150., 0., 0.,
+        ))),
+        ..Default::default()
+    });
+
+    // @TODO: spawn customer somewhere else
+    commands
+        .spawn_bundle(SpatialBundle {
+            transform: Transform::from_translation(Vec3::new(0., 150., 0.)),
+            ..default()
+        })
+        .insert(Taste::random())
+        .insert(CurrentCustomer)
+        .with_children(|parent| {
+            parent.spawn_bundle(SpriteSheetBundle {
+                texture_atlas: handles.skin_atlas.clone(),
+                sprite: TextureAtlasSprite {
+                    index: 2,
+                    anchor: Anchor::Center,
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+
+            parent.spawn_bundle(SpriteSheetBundle {
+                texture_atlas: handles.face_atlas.clone(),
+                transform: Transform::default().with_translation(Vec3::new(0., 0., 1.)),
+                sprite: TextureAtlasSprite {
+                    index: faces_metadata
+                        .face_indexes
+                        .choose(&mut rng)
+                        .cloned()
+                        .unwrap_or(0),
+                    anchor: Anchor::Center,
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+
+            // parent.spawn_bundle(SpriteSheetBundle {
+            //     texture_atlas: handles.hair_atlas.clone(),
+            //     sprite: TextureAtlasSprite {
+            //         index: 28,
+            //         // @TODO: each hair style will need a custom anchor point
+            //         anchor: Anchor::Custom(Vec2::new(0.0, 0.0)),
+            //         ..Default::default()
+            //     },
+            //     ..Default::default()
+            // });
+        });
+}
+
+#[allow(clippy::type_complexity)]
 pub fn change_cooking_donut(
     keys: Res<Input<KeyCode>>,
-
     mut cooking_donut: Query<
         (&mut Base, &mut Glazing, &mut Sprinkles),
         (With<CookingDonut>, With<Donut>),
@@ -42,7 +108,7 @@ pub fn change_cooking_donut(
 pub fn add_donut_sprites(
     mut commands: Commands,
     added_donuts: Query<(Entity, &Base, &Glazing, &Sprinkles), Added<Donut>>,
-    handles: Res<crate::Handles>,
+    handles: Res<Handles>,
 ) {
     for (entity, base, glazing, sprinkles) in added_donuts.iter() {
         commands.entity(entity).with_children(|parent| {
@@ -82,6 +148,7 @@ pub fn add_donut_sprites(
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn update_donut_sprites(
     changed_donuts: Query<
         (&Children, &Base, &Glazing, &Sprinkles),
@@ -144,7 +211,7 @@ pub fn offer_cooked_donut(
     cooking_donut: Query<(&Base, &Glazing, &Sprinkles), With<CookingDonut>>,
     customer: Query<&Taste, With<CurrentCustomer>>,
     log: Query<(Entity, &Children), With<SalesLog>>,
-    handles: Res<crate::Handles>,
+    handles: Res<Handles>,
 ) {
     if keys.just_pressed(KeyCode::Return) {
         if let Ok(taste) = customer.get_single() {
