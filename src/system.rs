@@ -144,11 +144,32 @@ pub fn offer_cooked_donut(
     cooking_donut: Query<(&Base, &Glazing, &Sprinkles), With<CookingDonut>>,
     customer: Query<&Taste, With<CurrentCustomer>>,
     log: Query<(Entity, &Children), With<SalesLog>>,
+    handles: Res<crate::Handles>,
 ) {
     if keys.just_pressed(KeyCode::Return) {
         if let Ok(taste) = customer.get_single() {
             if let Ok((base, glazing, sprinkles)) = cooking_donut.get_single() {
                 let donut_rank = taste.rank(base, glazing, sprinkles);
+
+                let emotion = match donut_rank {
+                    5 => Emo::Love,
+                    4 => Emo::Happy,
+                    3 => Emo::Sad,
+                    2 => Emo::Angry,
+                    _ => Emo::Heartbroken,
+                };
+
+                commands
+                    .spawn_bundle(SpriteSheetBundle {
+                        texture_atlas: handles.emotes_atlas.clone(),
+                        sprite: TextureAtlasSprite {
+                            index: emotion as usize,
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    })
+                    .insert(emotion)
+                    .insert(DisappearingTimer(Timer::from_seconds(1., false)));
 
                 println!("I rate this donut as {}", "⭐️".repeat(donut_rank));
 
@@ -168,6 +189,18 @@ pub fn offer_cooked_donut(
                     commands.entity(log).push_children(&[new_entry]);
                 }
             }
+        }
+    }
+}
+
+pub fn disappearing(
+    mut commands: Commands,
+    mut timers: Query<(Entity, &mut DisappearingTimer)>,
+    time: Res<Time>,
+) {
+    for (entity, mut timer) in timers.iter_mut() {
+        if timer.0.tick(time.delta()).just_finished() {
+            commands.entity(entity).despawn_recursive();
         }
     }
 }

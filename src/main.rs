@@ -1,4 +1,5 @@
-use bevy::{prelude::*, sprite::Anchor};
+use bevy::prelude::*;
+use bevy::sprite::Anchor;
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::json::JsonAssetPlugin;
 use bevy_inspector_egui::WorldInspectorPlugin;
@@ -27,6 +28,7 @@ fn main() {
                 .with_system(system::cook_another_donut)
                 .with_system(system::offer_cooked_donut),
         )
+        .add_system(system::disappearing)
         .run();
 }
 
@@ -42,6 +44,10 @@ struct MyAssets {
     donuts_texture: Handle<Image>,
     #[asset(path = "Donuts/Spritesheet/donuts_sheet.atlas.json")]
     donuts_texture_data: Handle<TextureAtlasData>,
+    #[asset(path = "Emote Pack/Spritesheets/vector_style1.png")]
+    emotes_texture: Handle<Image>,
+    #[asset(path = "Emote Pack/Spritesheets/vector_style1.atlas.json")]
+    emotes_texture_data: Handle<TextureAtlasData>,
     #[asset(path = "Character Pack/Spritesheet/sheet_face.png")]
     face_texture: Handle<Image>,
     #[asset(path = "Character Pack/Spritesheet/sheet_face.atlas.json")]
@@ -70,13 +76,37 @@ struct MyAssets {
 
 pub struct Handles {
     donuts_atlas: Handle<TextureAtlas>,
+    emotes_atlas: Handle<TextureAtlas>,
     face_atlas: Handle<TextureAtlas>,
-    hair_atlas: Handle<TextureAtlas>,
+    _hair_atlas: Handle<TextureAtlas>,
     skin_atlas: Handle<TextureAtlas>,
 }
 
 struct FacesMetadata {
     face_indexes: Vec<usize>,
+}
+
+trait FillTextures {
+    fn fill_textures(&mut self, texture_atlas_data: Option<&TextureAtlasData>);
+}
+impl FillTextures for TextureAtlas {
+    fn fill_textures(&mut self, texture_atlas_data: Option<&TextureAtlasData>) {
+        if let Some(texture_data) = texture_atlas_data {
+            for SubTexture {
+                x,
+                y,
+                width,
+                height,
+                ..
+            } in texture_data.texture_atlas.sub_textures.iter()
+            {
+                self.add_texture(bevy::sprite::Rect {
+                    min: Vec2::new(*x as f32, *y as f32),
+                    max: Vec2::new((x + width) as f32, (y + height) as f32),
+                });
+            }
+        }
+    }
 }
 
 fn init_assets(
@@ -87,95 +117,50 @@ fn init_assets(
 ) {
     let mut donuts_atlas =
         TextureAtlas::new_empty(my_assets.donuts_texture.clone(), Vec2::new(1024., 2048.));
-    if let Some(donuts_texture_data) = texture_atlas_data_assets.get(&my_assets.donuts_texture_data)
-    {
-        for SubTexture {
-            x,
-            y,
-            width,
-            height,
-            ..
-        } in donuts_texture_data.texture_atlas.sub_textures.iter()
-        {
-            donuts_atlas.add_texture(bevy::sprite::Rect {
-                min: Vec2::new(*x as f32, *y as f32),
-                max: Vec2::new((x + width) as f32, (y + height) as f32),
-            });
-        }
-    }
+    donuts_atlas.fill_textures(texture_atlas_data_assets.get(&my_assets.donuts_texture_data));
 
-    let mut faces_metadata = FacesMetadata {
-        face_indexes: vec![],
-    };
+    let mut emotes_atlas =
+        TextureAtlas::new_empty(my_assets.emotes_texture.clone(), Vec2::new(1024., 2048.));
+    emotes_atlas.fill_textures(texture_atlas_data_assets.get(&my_assets.emotes_texture_data));
+
     let mut face_atlas =
-        TextureAtlas::new_empty(my_assets.face_texture.clone(), Vec2::new(1024., 2048.));
-    if let Some(face_texture_data) = texture_atlas_data_assets.get(&my_assets.face_texture_data) {
-        for (
-            index,
-            SubTexture {
-                x,
-                y,
-                width,
-                height,
-                name,
-            },
-        ) in face_texture_data
-            .texture_atlas
-            .sub_textures
-            .iter()
-            .enumerate()
-        {
-            if name.starts_with("face") {
-                faces_metadata.face_indexes.push(index);
-            }
+        TextureAtlas::new_empty(my_assets.face_texture.clone(), Vec2::new(256., 512.));
+    face_atlas.fill_textures(texture_atlas_data_assets.get(&my_assets.face_texture_data));
 
-            face_atlas.add_texture(bevy::sprite::Rect {
-                min: Vec2::new(*x as f32, *y as f32),
-                max: Vec2::new((x + width) as f32, (y + height) as f32),
-            });
-        }
-    }
+    let faces_metadata = FacesMetadata {
+        face_indexes: texture_atlas_data_assets
+            .get(&my_assets.face_texture_data)
+            .map(|face_texture_data| {
+                face_texture_data
+                    .texture_atlas
+                    .sub_textures
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(index, sub_texture)| {
+                        if sub_texture.name.starts_with("face") {
+                            Some(index)
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
+            })
+            .unwrap_or_else(Vec::new),
+    };
 
     let mut hair_atlas =
-        TextureAtlas::new_empty(my_assets.hair_texture.clone(), Vec2::new(1024., 2048.));
-    if let Some(hair_texture_data) = texture_atlas_data_assets.get(&my_assets.hair_texture_data) {
-        for SubTexture {
-            x,
-            y,
-            width,
-            height,
-            ..
-        } in hair_texture_data.texture_atlas.sub_textures.iter()
-        {
-            hair_atlas.add_texture(bevy::sprite::Rect {
-                min: Vec2::new(*x as f32, *y as f32),
-                max: Vec2::new((x + width) as f32, (y + height) as f32),
-            });
-        }
-    }
+        TextureAtlas::new_empty(my_assets.hair_texture.clone(), Vec2::new(2048., 2048.));
+    hair_atlas.fill_textures(texture_atlas_data_assets.get(&my_assets.hair_texture_data));
 
     let mut skin_atlas =
-        TextureAtlas::new_empty(my_assets.skin_texture.clone(), Vec2::new(1024., 2048.));
-    if let Some(skin_texture_data) = texture_atlas_data_assets.get(&my_assets.skin_texture_data) {
-        for SubTexture {
-            x,
-            y,
-            width,
-            height,
-            ..
-        } in skin_texture_data.texture_atlas.sub_textures.iter()
-        {
-            skin_atlas.add_texture(bevy::sprite::Rect {
-                min: Vec2::new(*x as f32, *y as f32),
-                max: Vec2::new((x + width) as f32, (y + height) as f32),
-            });
-        }
-    }
+        TextureAtlas::new_empty(my_assets.skin_texture.clone(), Vec2::new(1024., 1024.));
+    skin_atlas.fill_textures(texture_atlas_data_assets.get(&my_assets.skin_texture_data));
 
     let handles = Handles {
         donuts_atlas: texture_atlases.add(donuts_atlas),
+        emotes_atlas: texture_atlases.add(emotes_atlas),
         face_atlas: texture_atlases.add(face_atlas),
-        hair_atlas: texture_atlases.add(hair_atlas),
+        _hair_atlas: texture_atlases.add(hair_atlas),
         skin_atlas: texture_atlases.add(skin_atlas),
     };
 

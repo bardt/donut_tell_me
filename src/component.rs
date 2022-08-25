@@ -184,3 +184,15 @@ impl Default for SalesLogBundle {
         }
     }
 }
+
+#[derive(Component, Clone, Copy)]
+pub enum Emo {
+    Angry = 15,
+    Happy = 16,
+    Sad = 17,
+    Love = 18,
+    Heartbroken = 19,
+}
+
+#[derive(Component)]
+pub struct DisappearingTimer(pub Timer);
