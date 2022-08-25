@@ -1,12 +1,15 @@
 use crate::assets::*;
 use crate::component::*;
+use bevy::input::mouse::MouseScrollUnit;
+use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use rand::prelude::*;
 
 pub fn setup_game(
     mut commands: Commands,
-    handles: Res<Handles>,
+    atlases: Res<Atlases>,
+    my_assets: Res<MyAssets>,
     faces_metadata: Res<FacesMetadata>,
 ) {
     commands.spawn_bundle(Camera2dBundle::default());
@@ -20,6 +23,65 @@ pub fn setup_game(
         ..Default::default()
     });
 
+    // Log UI
+    commands
+        .spawn_bundle(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::ColumnReverse,
+                align_self: AlignSelf::Center,
+                size: Size::new(Val::Px(300.0), Val::Percent(100.0)),
+                overflow: Overflow::Hidden,
+                position_type: PositionType::Absolute,
+                position: UiRect {
+                    right: Val::Px(0.),
+                    ..default()
+                },
+                ..default()
+            },
+            color: Color::rgb(0.10, 0.10, 0.10).into(),
+            ..default()
+        })
+        .with_children(|parent| {
+            // Moving panel
+            parent
+                .spawn_bundle(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::ColumnReverse,
+                        flex_grow: 1.0,
+                        max_size: Size::new(Val::Undefined, Val::Undefined),
+                        ..default()
+                    },
+                    color: Color::NONE.into(),
+                    ..default()
+                })
+                .insert(ScrollingList::default())
+                .with_children(|parent| {
+                    // List items
+                    for i in 0..30 {
+                        parent.spawn_bundle(
+                            TextBundle::from_section(
+                                format!("Item {i}"),
+                                TextStyle {
+                                    font: my_assets.font_blocks.clone(),
+                                    font_size: 20.,
+                                    color: Color::WHITE,
+                                },
+                            )
+                            .with_style(Style {
+                                flex_shrink: 0.,
+                                size: Size::new(Val::Undefined, Val::Px(20.)),
+                                margin: UiRect {
+                                    left: Val::Auto,
+                                    right: Val::Auto,
+                                    ..default()
+                                },
+                                ..default()
+                            }),
+                        );
+                    }
+                });
+        });
+
     // @TODO: spawn customer somewhere else
     commands
         .spawn_bundle(SpatialBundle {
@@ -30,7 +92,7 @@ pub fn setup_game(
         .insert(CurrentCustomer)
         .with_children(|parent| {
             parent.spawn_bundle(SpriteSheetBundle {
-                texture_atlas: handles.skin_atlas.clone(),
+                texture_atlas: atlases.skin_atlas.clone(),
                 sprite: TextureAtlasSprite {
                     index: 2,
                     anchor: Anchor::Center,
@@ -40,7 +102,7 @@ pub fn setup_game(
             });
 
             parent.spawn_bundle(SpriteSheetBundle {
-                texture_atlas: handles.face_atlas.clone(),
+                texture_atlas: atlases.face_atlas.clone(),
                 transform: Transform::default().with_translation(Vec3::new(0., 0., 1.)),
                 sprite: TextureAtlasSprite {
                     index: faces_metadata
@@ -65,6 +127,35 @@ pub fn setup_game(
             //     ..Default::default()
             // });
         });
+}
+
+#[derive(Component, Default)]
+pub struct ScrollingList {
+    position: f32,
+}
+
+pub fn mouse_scroll(
+    mut mouse_wheel_events: EventReader<MouseWheel>,
+    mut query_list: Query<(&mut ScrollingList, &mut Style, &Children, &Node)>,
+    query_item: Query<&Node>,
+) {
+    for mouse_wheel_event in mouse_wheel_events.iter() {
+        for (mut scrolling_list, mut style, children, uinode) in &mut query_list {
+            let items_height: f32 = children
+                .iter()
+                .map(|entity| query_item.get(*entity).unwrap().size.y)
+                .sum();
+            let panel_height = uinode.size.y;
+            let max_scroll = (items_height - panel_height).max(0.);
+            let dy = match mouse_wheel_event.unit {
+                MouseScrollUnit::Line => mouse_wheel_event.y * 20.,
+                MouseScrollUnit::Pixel => mouse_wheel_event.y,
+            };
+            scrolling_list.position += dy;
+            scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
+            style.position.top = Val::Px(scrolling_list.position);
+        }
+    }
 }
 
 #[allow(clippy::type_complexity)]
@@ -108,13 +199,13 @@ pub fn change_cooking_donut(
 pub fn add_donut_sprites(
     mut commands: Commands,
     added_donuts: Query<(Entity, &Base, &Glazing, &Sprinkles), Added<Donut>>,
-    handles: Res<Handles>,
+    atlases: Res<Atlases>,
 ) {
     for (entity, base, glazing, sprinkles) in added_donuts.iter() {
         commands.entity(entity).with_children(|parent| {
             parent
                 .spawn_bundle(SpriteSheetBundle {
-                    texture_atlas: handles.donuts_atlas.clone(),
+                    texture_atlas: atlases.donuts_atlas.clone(),
                     sprite: TextureAtlasSprite {
                         index: base.to_sprite_index(),
                         ..Default::default()
@@ -125,7 +216,7 @@ pub fn add_donut_sprites(
 
             parent
                 .spawn_bundle(SpriteSheetBundle {
-                    texture_atlas: handles.donuts_atlas.clone(),
+                    texture_atlas: atlases.donuts_atlas.clone(),
                     sprite: TextureAtlasSprite {
                         index: glazing.to_sprite_index(),
                         ..Default::default()
@@ -136,7 +227,7 @@ pub fn add_donut_sprites(
 
             parent
                 .spawn_bundle(SpriteSheetBundle {
-                    texture_atlas: handles.donuts_atlas.clone(),
+                    texture_atlas: atlases.donuts_atlas.clone(),
                     sprite: TextureAtlasSprite {
                         index: sprinkles.to_sprite_index(),
                         ..Default::default()
@@ -211,7 +302,7 @@ pub fn offer_cooked_donut(
     cooking_donut: Query<(&Base, &Glazing, &Sprinkles), With<CookingDonut>>,
     customer: Query<&Taste, With<CurrentCustomer>>,
     log: Query<(Entity, &Children), With<SalesLog>>,
-    handles: Res<Handles>,
+    atlases: Res<Atlases>,
 ) {
     if keys.just_pressed(KeyCode::Return) {
         if let Ok(taste) = customer.get_single() {
@@ -228,7 +319,7 @@ pub fn offer_cooked_donut(
 
                 commands
                     .spawn_bundle(SpriteSheetBundle {
-                        texture_atlas: handles.emotes_atlas.clone(),
+                        texture_atlas: atlases.emotes_atlas.clone(),
                         sprite: TextureAtlasSprite {
                             index: emotion as usize,
                             ..Default::default()

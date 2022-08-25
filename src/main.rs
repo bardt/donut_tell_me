@@ -11,7 +11,9 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WorldInspectorPlugin::new())
-        .add_plugin(JsonAssetPlugin::<assets::TextureAtlasData>::new(&["atlas.json"]))
+        .add_plugin(JsonAssetPlugin::<assets::TextureAtlasData>::new(&[
+            "atlas.json",
+        ]))
         .add_loading_state(
             LoadingState::new(GameState::AssetLoading)
                 .continue_to_state(GameState::InGame)
@@ -29,6 +31,7 @@ fn main() {
                 .with_system(system::offer_cooked_donut),
         )
         .add_system(system::disappearing)
+        .add_system(system::mouse_scroll)
         .run();
 }
 

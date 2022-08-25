@@ -3,6 +3,8 @@ use bevy_asset_loader::prelude::*;
 
 #[derive(AssetCollection)]
 pub struct MyAssets {
+    #[asset(path = "fonts/Kenney Blocks.ttf")]
+    pub font_blocks: Handle<Font>,
     #[asset(path = "Donuts/Spritesheet/donuts_sheet.png")]
     pub donuts_texture: Handle<Image>,
     #[asset(path = "Donuts/Spritesheet/donuts_sheet.atlas.json")]
@@ -37,7 +39,7 @@ pub struct MyAssets {
     pub skin_texture_data: Handle<TextureAtlasData>,
 }
 
-pub struct Handles {
+pub struct Atlases {
     pub donuts_atlas: Handle<TextureAtlas>,
     pub emotes_atlas: Handle<TextureAtlas>,
     pub face_atlas: Handle<TextureAtlas>,
@@ -96,7 +98,7 @@ pub fn init(
         TextureAtlas::new_empty(my_assets.skin_texture.clone(), Vec2::new(1024., 1024.));
     skin_atlas.fill_textures(texture_atlas_data_assets.get(&my_assets.skin_texture_data));
 
-    let handles = Handles {
+    let handles = Atlases {
         donuts_atlas: texture_atlases.add(donuts_atlas),
         emotes_atlas: texture_atlases.add(emotes_atlas),
         face_atlas: texture_atlases.add(face_atlas),
