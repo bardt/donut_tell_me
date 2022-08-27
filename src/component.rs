@@ -98,7 +98,7 @@ pub struct DonutBundle {
     pub glazing: Glazing,
     pub sprinkles: Sprinkles,
 
-    pub photo: Handle<Image>,
+    pub photo: Photo,
 
     #[bundle]
     pub spatial: SpatialBundle,
@@ -166,11 +166,11 @@ fn test_donut_ranking() {
 pub struct CurrentCustomer;
 
 #[derive(Component, Default)]
-pub struct SalesLog;
+pub struct TransactionLog;
 
 #[derive(Bundle)]
 pub struct SalesLogBundle {
-    pub sales_log: SalesLog,
+    pub sales_log: TransactionLog,
     pub children: Children,
 
     #[bundle]
@@ -180,7 +180,7 @@ pub struct SalesLogBundle {
 impl Default for SalesLogBundle {
     fn default() -> Self {
         Self {
-            sales_log: SalesLog,
+            sales_log: TransactionLog,
             children: Children::with(&[]),
             spatial: SpatialBundle::default(),
         }
@@ -199,5 +199,9 @@ pub enum Emo {
 #[derive(Component)]
 pub struct DisappearingTimer(pub Timer);
 
+#[derive(Component, Default)]
+pub struct Photo(pub Handle<Image>);
+
 #[derive(Component)]
-pub struct DonutCamera;
+pub struct PhotoCamera;
+pub struct PhotosTaken;

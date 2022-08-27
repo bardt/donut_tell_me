@@ -8,12 +8,14 @@ mod component;
 mod system;
 
 fn main() {
+    static PHOTO: &str = "photo";
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(JsonAssetPlugin::<assets::TextureAtlasData>::new(&[
             "atlas.json",
         ]))
+        .add_event::<component::PhotosTaken>()
         .add_loading_state(
             LoadingState::new(GameState::AssetLoading)
                 .continue_to_state(GameState::InGame)
@@ -24,6 +26,12 @@ fn main() {
         .add_system_set(SystemSet::on_enter(GameState::InGame).with_system(system::setup_game))
         .add_system_set(
             SystemSet::on_update(GameState::InGame)
+                .label(PHOTO)
+                .with_system(system::log_transaction),
+        )
+        .add_system_set(
+            SystemSet::on_update(GameState::InGame)
+                .after(PHOTO)
                 .with_system(system::add_donut_sprites)
                 .with_system(system::change_cooking_donut)
                 .with_system(system::update_donut_sprites)

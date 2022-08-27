@@ -51,7 +51,7 @@ pub fn setup_game(
                     ..default()
                 })
                 .insert(ScrollingList::default())
-                .insert(SalesLog);
+                .insert(TransactionLog);
         });
 
     // @TODO: spawn customer somewhere else
@@ -250,7 +250,7 @@ pub fn cook_another_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
     cooking_donut: Query<Entity, With<CookingDonut>>,
-    donut_camera: Query<Entity, With<DonutCamera>>,
+    donut_camera: Query<Entity, With<PhotoCamera>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     if keys.just_pressed(KeyCode::N) {
@@ -299,7 +299,7 @@ pub fn cook_another_donut(
                 .with_scale(Vec3::ONE * 0.3),
             ..Default::default()
         };
-        commands.spawn_bundle(camera_bundle).insert(DonutCamera);
+        commands.spawn_bundle(camera_bundle).insert(PhotoCamera);
 
         commands
             .spawn_bundle(DonutBundle {
@@ -307,7 +307,7 @@ pub fn cook_another_donut(
                     Transform::from_translation(Vec3::new(0., -150., 0.))
                         .with_scale(Vec3::ONE * 0.5),
                 ),
-                photo: image_handle,
+                photo: Photo(image_handle),
                 ..Default::default()
             })
             .insert(CookingDonut);
@@ -317,16 +317,15 @@ pub fn cook_another_donut(
 pub fn offer_cooked_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
-    cooking_donut: Query<(Entity, &Base, &Glazing, &Sprinkles, &Handle<Image>), With<CookingDonut>>,
+    cooking_donut: Query<(&Base, &Glazing, &Sprinkles), With<CookingDonut>>,
     customer: Query<&Taste, With<CurrentCustomer>>,
-    log: Query<Entity, With<SalesLog>>,
     atlases: Res<Atlases>,
-    donut_camera: Query<Entity, With<DonutCamera>>,
+    mut ev_photos_taken: EventWriter<PhotosTaken>,
+    mut images: ResMut<Assets<Image>>,
 ) {
     if keys.just_pressed(KeyCode::Return) {
         if let Ok(taste) = customer.get_single() {
-            if let Ok((cooking_donut, base, glazing, sprinkles, photo)) = cooking_donut.get_single()
-            {
+            if let Ok((base, glazing, sprinkles)) = cooking_donut.get_single() {
                 let donut_rank = taste.rank(base, glazing, sprinkles);
 
                 let emotion = match donut_rank {
@@ -336,6 +335,46 @@ pub fn offer_cooked_donut(
                     2 => Emo::Angry,
                     _ => Emo::Heartbroken,
                 };
+
+                let size = Extent3d {
+                    width: 512,
+                    height: 512,
+                    ..default()
+                };
+                // This is the texture that will be rendered to.
+                let mut image = Image {
+                    texture_descriptor: TextureDescriptor {
+                        label: None,
+                        size,
+                        dimension: TextureDimension::D2,
+                        format: TextureFormat::Bgra8UnormSrgb,
+                        mip_level_count: 1,
+                        sample_count: 1,
+                        usage: TextureUsages::TEXTURE_BINDING
+                            | TextureUsages::COPY_DST
+                            | TextureUsages::RENDER_ATTACHMENT,
+                    },
+                    ..default()
+                };
+
+                // fill image.data with zeroes
+                image.resize(size);
+
+                let image_handle = images.add(image);
+                let camera_bundle = Camera2dBundle {
+                    camera_2d: Camera2d {
+                        clear_color: ClearColorConfig::None,
+                        ..Default::default()
+                    },
+                    camera: Camera {
+                        target: RenderTarget::Image(image_handle.clone()),
+                        ..Default::default()
+                    },
+                    transform: Transform::from_translation(Vec3::new(0., 0., 0.))
+                        .with_scale(Vec3::ONE * 0.1),
+                    ..Default::default()
+                };
+                commands.spawn_bundle(camera_bundle).insert(PhotoCamera);
 
                 commands
                     .spawn_bundle(SpriteSheetBundle {
@@ -347,12 +386,30 @@ pub fn offer_cooked_donut(
                         ..Default::default()
                     })
                     .insert(emotion)
+                    .insert(Photo(image_handle))
                     .insert(DisappearingTimer(Timer::from_seconds(1., false)));
 
                 println!("I rate this donut as {}", "⭐️".repeat(donut_rank));
 
-                if let Ok(donut_camera) = donut_camera.get_single() {
-                    commands.entity(donut_camera).despawn_recursive()
+                ev_photos_taken.send(PhotosTaken);
+            }
+        }
+    }
+}
+
+pub fn log_transaction(
+    mut commands: Commands,
+    mut ev_photos_taken: EventReader<PhotosTaken>,
+    photo_cameras: Query<Entity, With<PhotoCamera>>,
+    cooking_donut: Query<(Entity, &Photo), With<CookingDonut>>,
+    emo_photo: Query<&Photo, With<Emo>>,
+    log: Query<Entity, With<TransactionLog>>,
+) {
+    for _event in ev_photos_taken.iter() {
+        if let Ok((cooking_donut, photo)) = cooking_donut.get_single() {
+            if let Ok(emo_photo) = emo_photo.get_single() {
+                for photo_camera in photo_cameras.iter() {
+                    commands.entity(photo_camera).despawn_recursive();
                 }
                 commands.entity(cooking_donut).despawn_recursive();
 
@@ -371,7 +428,21 @@ pub fn offer_cooked_donut(
                         .with_children(|parent| {
                             parent
                                 .spawn_bundle(ImageBundle {
-                                    image: UiImage(photo.clone()),
+                                    image: UiImage(photo.0.clone()),
+                                    style: Style {
+                                        size: Size {
+                                            width: Val::Px(100.),
+                                            height: Val::Px(100.),
+                                        },
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                })
+                                .insert(Node::default());
+
+                            parent
+                                .spawn_bundle(ImageBundle {
+                                    image: UiImage(emo_photo.0.clone()),
                                     style: Style {
                                         size: Size {
                                             width: Val::Px(100.),
