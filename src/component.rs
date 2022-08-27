@@ -114,28 +114,33 @@ pub struct Taste {
 
 impl Taste {
     pub fn rank(&self, base: &Base, glazing: &Glazing, sprinkles: &Sprinkles) -> usize {
-        let base_rank = self.bases[base.0];
-        let glazing_rank = self.glazing[glazing.0];
-        let sprinkles_rank = self.sprinkles[sprinkles.0];
+        let stars = [
+            self.bases[base.0],
+            self.glazing[glazing.0],
+            self.sprinkles[sprinkles.0],
+        ];
 
-        // @TODO: adjust the formula
-        let total_rank: usize = (base_rank + glazing_rank + sprinkles_rank) / 3;
-        total_rank
+        // Returns 0.0..1.0
+        let weight = |r| ((r as f32 - 4.) * 2. + 7.) / 9.;
+
+        let average_weight: f32 = stars.into_iter().map(weight).sum::<f32>() / stars.len() as f32;
+
+        (average_weight * 5.).round() as usize
     }
 
     pub fn random() -> Self {
+        use rand::distributions::WeightedIndex;
         use rand::prelude::*;
+
+        let choices = [1, 2, 3, 4, 5];
+        let weights = [1, 2, 5, 6, 3];
+        let dist = WeightedIndex::new(&weights).unwrap();
         let mut rng = rand::thread_rng();
 
-        // @TODO: generate taste somewhat systematically
-        let bases = [0; Base::SPRITES_COUNT].map(|_| rng.gen_range(1_usize..5_usize));
-        let glazing = [0; Glazing::SPRITES_COUNT].map(|_| rng.gen_range(1_usize..5_usize));
-        let sprinkles = [0; Sprinkles::SPRITES_COUNT].map(|_| rng.gen_range(1_usize..5_usize));
-
         Taste {
-            bases,
-            glazing,
-            sprinkles,
+            bases: [0; Base::SPRITES_COUNT].map(|_| choices[dist.sample(&mut rng)]),
+            glazing: [0; Glazing::SPRITES_COUNT].map(|_| choices[dist.sample(&mut rng)]),
+            sprinkles: [0; Sprinkles::SPRITES_COUNT].map(|_| choices[dist.sample(&mut rng)]),
         }
     }
 }
@@ -150,14 +155,51 @@ fn test_donut_ranking() {
         0
     );
 
-    let mut exact_taste = Taste::default();
-    exact_taste.bases[0] = 5;
-    exact_taste.glazing[0] = 5;
-    exact_taste.sprinkles[0] = 5;
-    assert_eq!(
-        exact_taste.rank(&donut.base, &donut.glazing, &donut.sprinkles),
-        5
-    );
+    let mut taste = Taste::default();
+    taste.bases[0] = 5;
+    taste.glazing[0] = 5;
+    taste.sprinkles[0] = 5;
+    assert_eq!(taste.rank(&donut.base, &donut.glazing, &donut.sprinkles), 5);
+
+    taste.bases[0] = 4;
+    taste.glazing[0] = 5;
+    taste.sprinkles[0] = 5;
+    assert_eq!(taste.rank(&donut.base, &donut.glazing, &donut.sprinkles), 5);
+
+    taste.bases[0] = 4;
+    taste.glazing[0] = 4;
+    taste.sprinkles[0] = 5;
+    assert_eq!(taste.rank(&donut.base, &donut.glazing, &donut.sprinkles), 4);
+
+    taste.bases[0] = 2;
+    taste.glazing[0] = 5;
+    taste.sprinkles[0] = 5;
+    assert_eq!(taste.rank(&donut.base, &donut.glazing, &donut.sprinkles), 4);
+
+    taste.bases[0] = 3;
+    taste.glazing[0] = 4;
+    taste.sprinkles[0] = 3;
+    assert_eq!(taste.rank(&donut.base, &donut.glazing, &donut.sprinkles), 3);
+
+    taste.bases[0] = 2;
+    taste.glazing[0] = 4;
+    taste.sprinkles[0] = 4;
+    assert_eq!(taste.rank(&donut.base, &donut.glazing, &donut.sprinkles), 3);
+
+    taste.bases[0] = 1;
+    taste.glazing[0] = 4;
+    taste.sprinkles[0] = 5;
+    assert_eq!(taste.rank(&donut.base, &donut.glazing, &donut.sprinkles), 3);
+
+    taste.bases[0] = 1;
+    taste.glazing[0] = 2;
+    taste.sprinkles[0] = 3;
+    assert_eq!(taste.rank(&donut.base, &donut.glazing, &donut.sprinkles), 2);
+
+    taste.bases[0] = 1;
+    taste.glazing[0] = 2;
+    taste.sprinkles[0] = 2;
+    assert_eq!(taste.rank(&donut.base, &donut.glazing, &donut.sprinkles), 1);
 }
 
 #[derive(Component)]
