@@ -252,19 +252,17 @@ pub fn cook_another_donut(
     cooking_donut: Query<Entity, With<CookingDonut>>,
 ) {
     if keys.just_pressed(KeyCode::N) {
-        if let Ok(cooking_donut) = cooking_donut.get_single() {
-            commands.entity(cooking_donut).despawn_recursive();
+        if cooking_donut.get_single().ok().is_none() {
+            commands
+                .spawn_bundle(DonutBundle {
+                    spatial: SpatialBundle::from_transform(
+                        Transform::from_translation(Vec3::new(0., -150., 0.))
+                            .with_scale(Vec3::ONE * 0.5),
+                    ),
+                    ..Default::default()
+                })
+                .insert(CookingDonut);
         }
-
-        commands
-            .spawn_bundle(DonutBundle {
-                spatial: SpatialBundle::from_transform(
-                    Transform::from_translation(Vec3::new(0., -150., 0.))
-                        .with_scale(Vec3::ONE * 0.5),
-                ),
-                ..Default::default()
-            })
-            .insert(CookingDonut);
     }
 }
 
@@ -395,8 +393,8 @@ pub fn log_transaction(
                             color: Color::TEAL.into(),
                             style: Style {
                                 flex_shrink: 0.,
-                                size: Size::new(Val::Auto, Val::Px(100.)),
-                                margin: UiRect::all(Val::Px(20.)),
+                                size: Size::new(Val::Auto, Val::Px(120.)),
+                                padding: UiRect::all(Val::Px(10.)),
                                 ..default()
                             },
                             ..Default::default()
@@ -431,7 +429,7 @@ pub fn log_transaction(
                                 .insert(Node::default());
                         })
                         .id();
-                    commands.entity(log).push_children(&[new_entry]);
+                    commands.entity(log).insert_children(0, &[new_entry]);
                 }
             }
         }
