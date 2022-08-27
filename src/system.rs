@@ -1,27 +1,23 @@
 use crate::assets::*;
 use crate::component::*;
-use bevy::input::mouse::MouseScrollUnit;
-use bevy::input::mouse::MouseWheel;
+use bevy::core_pipeline::clear_color::ClearColorConfig;
+use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
+use bevy::render::camera::RenderTarget;
+use bevy::render::render_resource::{
+    Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
+};
 use bevy::sprite::Anchor;
 use rand::prelude::*;
 
 pub fn setup_game(
     mut commands: Commands,
     atlases: Res<Atlases>,
-    my_assets: Res<MyAssets>,
     faces_metadata: Res<FacesMetadata>,
 ) {
     commands.spawn_bundle(Camera2dBundle::default());
 
     let mut rng = rand::thread_rng();
-
-    commands.spawn_bundle(SalesLogBundle {
-        spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
-            150., 0., 0.,
-        ))),
-        ..Default::default()
-    });
 
     // Log UI
     commands
@@ -55,31 +51,7 @@ pub fn setup_game(
                     ..default()
                 })
                 .insert(ScrollingList::default())
-                .with_children(|parent| {
-                    // List items
-                    for i in 0..30 {
-                        parent.spawn_bundle(
-                            TextBundle::from_section(
-                                format!("Item {i}"),
-                                TextStyle {
-                                    font: my_assets.font_blocks.clone(),
-                                    font_size: 20.,
-                                    color: Color::WHITE,
-                                },
-                            )
-                            .with_style(Style {
-                                flex_shrink: 0.,
-                                size: Size::new(Val::Undefined, Val::Px(20.)),
-                                margin: UiRect {
-                                    left: Val::Auto,
-                                    right: Val::Auto,
-                                    ..default()
-                                },
-                                ..default()
-                            }),
-                        );
-                    }
-                });
+                .insert(SalesLog);
         });
 
     // @TODO: spawn customer somewhere else
@@ -278,11 +250,56 @@ pub fn cook_another_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
     cooking_donut: Query<Entity, With<CookingDonut>>,
+    donut_camera: Query<Entity, With<DonutCamera>>,
+    mut images: ResMut<Assets<Image>>,
 ) {
     if keys.just_pressed(KeyCode::N) {
         if let Ok(cooking_donut) = cooking_donut.get_single() {
             commands.entity(cooking_donut).despawn_recursive();
         }
+        if let Ok(donut_camera) = donut_camera.get_single() {
+            commands.entity(donut_camera).despawn_recursive();
+        }
+
+        let size = Extent3d {
+            width: 512,
+            height: 512,
+            ..default()
+        };
+        // This is the texture that will be rendered to.
+        let mut image = Image {
+            texture_descriptor: TextureDescriptor {
+                label: None,
+                size,
+                dimension: TextureDimension::D2,
+                format: TextureFormat::Bgra8UnormSrgb,
+                mip_level_count: 1,
+                sample_count: 1,
+                usage: TextureUsages::TEXTURE_BINDING
+                    | TextureUsages::COPY_DST
+                    | TextureUsages::RENDER_ATTACHMENT,
+            },
+            ..default()
+        };
+
+        // fill image.data with zeroes
+        image.resize(size);
+
+        let image_handle = images.add(image);
+        let camera_bundle = Camera2dBundle {
+            camera_2d: Camera2d {
+                clear_color: ClearColorConfig::None,
+                ..Default::default()
+            },
+            camera: Camera {
+                target: RenderTarget::Image(image_handle.clone()),
+                ..Default::default()
+            },
+            transform: Transform::from_translation(Vec3::new(0., -150., 0.))
+                .with_scale(Vec3::ONE * 0.3),
+            ..Default::default()
+        };
+        commands.spawn_bundle(camera_bundle).insert(DonutCamera);
 
         commands
             .spawn_bundle(DonutBundle {
@@ -290,6 +307,7 @@ pub fn cook_another_donut(
                     Transform::from_translation(Vec3::new(0., -150., 0.))
                         .with_scale(Vec3::ONE * 0.5),
                 ),
+                photo: image_handle,
                 ..Default::default()
             })
             .insert(CookingDonut);
@@ -299,14 +317,16 @@ pub fn cook_another_donut(
 pub fn offer_cooked_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
-    cooking_donut: Query<(&Base, &Glazing, &Sprinkles), With<CookingDonut>>,
+    cooking_donut: Query<(Entity, &Base, &Glazing, &Sprinkles, &Handle<Image>), With<CookingDonut>>,
     customer: Query<&Taste, With<CurrentCustomer>>,
-    log: Query<(Entity, &Children), With<SalesLog>>,
+    log: Query<Entity, With<SalesLog>>,
     atlases: Res<Atlases>,
+    donut_camera: Query<Entity, With<DonutCamera>>,
 ) {
     if keys.just_pressed(KeyCode::Return) {
         if let Ok(taste) = customer.get_single() {
-            if let Ok((base, glazing, sprinkles)) = cooking_donut.get_single() {
+            if let Ok((cooking_donut, base, glazing, sprinkles, photo)) = cooking_donut.get_single()
+            {
                 let donut_rank = taste.rank(base, glazing, sprinkles);
 
                 let emotion = match donut_rank {
@@ -331,17 +351,37 @@ pub fn offer_cooked_donut(
 
                 println!("I rate this donut as {}", "⭐️".repeat(donut_rank));
 
-                for (log, entries) in log.iter() {
+                if let Ok(donut_camera) = donut_camera.get_single() {
+                    commands.entity(donut_camera).despawn_recursive()
+                }
+                commands.entity(cooking_donut).despawn_recursive();
+
+                for log in log.iter() {
                     let new_entry = commands
-                        .spawn_bundle(DonutBundle {
-                            base: *base,
-                            glazing: *glazing,
-                            sprinkles: *sprinkles,
-                            spatial: SpatialBundle::from_transform(
-                                Transform::from_xyz(0., 100. * entries.len() as f32, 0.)
-                                    .with_scale(Vec3::ONE * 0.3),
-                            ),
+                        .spawn_bundle(NodeBundle {
+                            color: Color::TEAL.into(),
+                            style: Style {
+                                flex_shrink: 0.,
+                                size: Size::new(Val::Auto, Val::Px(100.)),
+                                margin: UiRect::all(Val::Px(20.)),
+                                ..default()
+                            },
                             ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            parent
+                                .spawn_bundle(ImageBundle {
+                                    image: UiImage(photo.clone()),
+                                    style: Style {
+                                        size: Size {
+                                            width: Val::Px(100.),
+                                            height: Val::Px(100.),
+                                        },
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                })
+                                .insert(Node::default());
                         })
                         .id();
                     commands.entity(log).push_children(&[new_entry]);
