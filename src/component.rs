@@ -98,8 +98,6 @@ pub struct DonutBundle {
     pub glazing: Glazing,
     pub sprinkles: Sprinkles,
 
-    pub photo: Photo,
-
     #[bundle]
     pub spatial: SpatialBundle,
 }
@@ -199,7 +197,7 @@ pub enum Emo {
 #[derive(Component)]
 pub struct DisappearingTimer(pub Timer);
 
-#[derive(Component, Default)]
+#[derive(Component)]
 pub struct Photo(pub Handle<Image>);
 
 #[derive(Component)]

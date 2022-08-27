@@ -250,56 +250,11 @@ pub fn cook_another_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
     cooking_donut: Query<Entity, With<CookingDonut>>,
-    donut_camera: Query<Entity, With<PhotoCamera>>,
-    mut images: ResMut<Assets<Image>>,
 ) {
     if keys.just_pressed(KeyCode::N) {
         if let Ok(cooking_donut) = cooking_donut.get_single() {
             commands.entity(cooking_donut).despawn_recursive();
         }
-        if let Ok(donut_camera) = donut_camera.get_single() {
-            commands.entity(donut_camera).despawn_recursive();
-        }
-
-        let size = Extent3d {
-            width: 512,
-            height: 512,
-            ..default()
-        };
-        // This is the texture that will be rendered to.
-        let mut image = Image {
-            texture_descriptor: TextureDescriptor {
-                label: None,
-                size,
-                dimension: TextureDimension::D2,
-                format: TextureFormat::Bgra8UnormSrgb,
-                mip_level_count: 1,
-                sample_count: 1,
-                usage: TextureUsages::TEXTURE_BINDING
-                    | TextureUsages::COPY_DST
-                    | TextureUsages::RENDER_ATTACHMENT,
-            },
-            ..default()
-        };
-
-        // fill image.data with zeroes
-        image.resize(size);
-
-        let image_handle = images.add(image);
-        let camera_bundle = Camera2dBundle {
-            camera_2d: Camera2d {
-                clear_color: ClearColorConfig::None,
-                ..Default::default()
-            },
-            camera: Camera {
-                target: RenderTarget::Image(image_handle.clone()),
-                ..Default::default()
-            },
-            transform: Transform::from_translation(Vec3::new(0., -150., 0.))
-                .with_scale(Vec3::ONE * 0.3),
-            ..Default::default()
-        };
-        commands.spawn_bundle(camera_bundle).insert(PhotoCamera);
 
         commands
             .spawn_bundle(DonutBundle {
@@ -307,7 +262,6 @@ pub fn cook_another_donut(
                     Transform::from_translation(Vec3::new(0., -150., 0.))
                         .with_scale(Vec3::ONE * 0.5),
                 ),
-                photo: Photo(image_handle),
                 ..Default::default()
             })
             .insert(CookingDonut);
@@ -317,7 +271,7 @@ pub fn cook_another_donut(
 pub fn offer_cooked_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
-    cooking_donut: Query<(&Base, &Glazing, &Sprinkles), With<CookingDonut>>,
+    cooking_donut: Query<(Entity, &Base, &Glazing, &Sprinkles), With<CookingDonut>>,
     customer: Query<&Taste, With<CurrentCustomer>>,
     atlases: Res<Atlases>,
     mut ev_photos_taken: EventWriter<PhotosTaken>,
@@ -325,7 +279,7 @@ pub fn offer_cooked_donut(
 ) {
     if keys.just_pressed(KeyCode::Return) {
         if let Ok(taste) = customer.get_single() {
-            if let Ok((base, glazing, sprinkles)) = cooking_donut.get_single() {
+            if let Ok((cooking_donut, base, glazing, sprinkles)) = cooking_donut.get_single() {
                 let donut_rank = taste.rank(base, glazing, sprinkles);
 
                 let emotion = match donut_rank {
@@ -360,21 +314,44 @@ pub fn offer_cooked_donut(
                 // fill image.data with zeroes
                 image.resize(size);
 
-                let image_handle = images.add(image);
-                let camera_bundle = Camera2dBundle {
+                let donut_image_handle = images.add(image.clone());
+                let emo_image_handle = images.add(image);
+
+                let donut_camera_bundle = Camera2dBundle {
                     camera_2d: Camera2d {
                         clear_color: ClearColorConfig::None,
                         ..Default::default()
                     },
                     camera: Camera {
-                        target: RenderTarget::Image(image_handle.clone()),
+                        target: RenderTarget::Image(donut_image_handle.clone()),
+                        ..Default::default()
+                    },
+                    transform: Transform::from_translation(Vec3::new(0., -150., 0.))
+                        .with_scale(Vec3::ONE * 0.3),
+                    ..Default::default()
+                };
+                commands
+                    .spawn_bundle(donut_camera_bundle)
+                    .insert(PhotoCamera);
+                commands
+                    .entity(cooking_donut)
+                    .insert(Photo(donut_image_handle));
+
+                // Emo camera
+                let emo_camera_bundle = Camera2dBundle {
+                    camera_2d: Camera2d {
+                        clear_color: ClearColorConfig::None,
+                        ..Default::default()
+                    },
+                    camera: Camera {
+                        target: RenderTarget::Image(emo_image_handle.clone()),
                         ..Default::default()
                     },
                     transform: Transform::from_translation(Vec3::new(0., 0., 0.))
                         .with_scale(Vec3::ONE * 0.1),
                     ..Default::default()
                 };
-                commands.spawn_bundle(camera_bundle).insert(PhotoCamera);
+                commands.spawn_bundle(emo_camera_bundle).insert(PhotoCamera);
 
                 commands
                     .spawn_bundle(SpriteSheetBundle {
@@ -386,7 +363,7 @@ pub fn offer_cooked_donut(
                         ..Default::default()
                     })
                     .insert(emotion)
-                    .insert(Photo(image_handle))
+                    .insert(Photo(emo_image_handle))
                     .insert(DisappearingTimer(Timer::from_seconds(1., false)));
 
                 println!("I rate this donut as {}", "⭐️".repeat(donut_rank));
