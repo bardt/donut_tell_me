@@ -320,7 +320,6 @@ pub fn offer_cooked_donut(
                 let donut_camera_bundle = Camera2dBundle {
                     camera_2d: Camera2d {
                         clear_color: ClearColorConfig::None,
-                        ..Default::default()
                     },
                     camera: Camera {
                         target: RenderTarget::Image(donut_image_handle.clone()),
@@ -341,14 +340,13 @@ pub fn offer_cooked_donut(
                 let emo_camera_bundle = Camera2dBundle {
                     camera_2d: Camera2d {
                         clear_color: ClearColorConfig::None,
-                        ..Default::default()
                     },
                     camera: Camera {
                         target: RenderTarget::Image(emo_image_handle.clone()),
                         ..Default::default()
                     },
-                    transform: Transform::from_translation(Vec3::new(0., 0., 0.))
-                        .with_scale(Vec3::ONE * 0.1),
+                    transform: Transform::from_translation(Vec3::new(0., 180., 10.))
+                        .with_scale(Vec3::ONE * 0.5),
                     ..Default::default()
                 };
                 commands.spawn_bundle(emo_camera_bundle).insert(PhotoCamera);
@@ -360,6 +358,7 @@ pub fn offer_cooked_donut(
                             index: emotion as usize,
                             ..Default::default()
                         },
+                        transform: Transform::from_translation(Vec3::new(0., 275., 0.)),
                         ..Default::default()
                     })
                     .insert(emotion)
