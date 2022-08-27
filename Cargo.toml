@@ -10,3 +10,6 @@ serde = "1.0"
 bevy_asset_loader = "0.12.1"
 bevy_common_assets = { version = "0.3", features = ["json"]}
 bevy-inspector-egui = "0.12.1"
+
+[patch.crates-io]
+wgpu = { git = "https://github.com/mockersf/wgpu/", branch = "unconditional-clear-workaround" }
