@@ -49,7 +49,7 @@ pub struct Glazing(pub usize);
 
 impl ToSpriteIndex for Glazing {
     const START_SPRITE_INDEX: usize = 3;
-    const SPRITES_COUNT: usize = 10;
+    const SPRITES_COUNT: usize = 6;
 
     fn to_sprite_index(&self) -> usize {
         Self::START_SPRITE_INDEX + (self.0)
@@ -71,7 +71,7 @@ pub struct Sprinkles(pub usize);
 
 impl ToSpriteIndex for Sprinkles {
     const START_SPRITE_INDEX: usize = 13;
-    const SPRITES_COUNT: usize = 9;
+    const SPRITES_COUNT: usize = 7;
 
     fn to_sprite_index(&self) -> usize {
         Self::START_SPRITE_INDEX + (self.0 as usize)
