@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_common_assets::json::JsonAssetPlugin;
 use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_ninepatch::*;
 
 mod assets;
 mod component;
@@ -16,6 +17,7 @@ fn main() {
         .add_plugin(JsonAssetPlugin::<assets::TextureAtlasData>::new(&[
             "atlas.json",
         ]))
+        .add_plugin(NinePatchPlugin::<()>::default())
         .add_event::<component::PhotosTakenEvent>()
         .add_loading_state(
             LoadingState::new(AppState::AssetLoading)

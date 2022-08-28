@@ -9,14 +9,19 @@ use bevy::render::render_resource::{
     Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
 use bevy::sprite::Anchor;
+use bevy_ninepatch::*;
 use rand::prelude::*;
 
 pub fn setup_game(
     mut commands: Commands,
     atlases: Res<Atlases>,
+    my_assets: Res<MyAssets>,
     faces_metadata: Res<FacesMetadata>,
+    mut nine_patches: ResMut<Assets<NinePatchBuilder<()>>>,
 ) {
     commands.spawn_bundle(Camera2dBundle::default());
+
+    let nine_patch_handle = nine_patches.add(NinePatchBuilder::by_margins(44, 44, 44, 44));
 
     let mut rng = rand::thread_rng();
 
@@ -35,10 +40,25 @@ pub fn setup_game(
                 },
                 ..default()
             },
-            color: Color::rgb(0.10, 0.10, 0.10).into(),
+            color: Color::NONE.into(),
             ..default()
         })
         .with_children(|parent| {
+            // Background
+            parent.spawn_bundle(NinePatchBundle {
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    position: UiRect::all(Val::Percent(0.)),
+                    ..Default::default()
+                },
+                nine_patch_data: NinePatchData {
+                    texture: my_assets.ui_panel_wood_wear.clone(),
+                    nine_patch: nine_patch_handle,
+                    ..default()
+                },
+                ..Default::default()
+            });
+
             // Moving panel
             parent
                 .spawn_bundle(NodeBundle {
@@ -400,7 +420,7 @@ pub fn log_transaction(
                 for log in log.iter() {
                     let new_entry = commands
                         .spawn_bundle(NodeBundle {
-                            color: Color::TEAL.into(),
+                            color: Color::NONE.into(),
                             style: Style {
                                 flex_shrink: 0.,
                                 size: Size::new(Val::Auto, Val::Px(120.)),

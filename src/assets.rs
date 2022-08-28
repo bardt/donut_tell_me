@@ -7,6 +7,8 @@ pub struct MyAssets {
     pub font_blocks: Handle<Font>,
     #[asset(path = "fonts/Kenney Pixel.ttf")]
     pub font_pixel: Handle<Font>,
+    #[asset(path = "Interface Pack/PNG/Retina/panel_woodWear.png")]
+    pub ui_panel_wood_wear: Handle<Image>,
     #[asset(path = "Donuts/Spritesheet/donuts_sheet.png")]
     pub donuts_texture: Handle<Image>,
     #[asset(path = "Donuts/Spritesheet/donuts_sheet.atlas.json")]
