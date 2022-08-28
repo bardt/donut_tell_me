@@ -18,61 +18,115 @@ pub fn setup_game(
     faces_metadata: Res<FacesMetadata>,
     mut nine_patches: ResMut<Assets<NinePatchBuilder<()>>>,
 ) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    let mut main_camera_bundle = Camera2dBundle::default();
+    main_camera_bundle.transform.translation.x = 100.; // half of the side panel width
+    commands
+        .spawn_bundle(main_camera_bundle)
+        .insert(RenderLayers::from_layers(&[0, 1]));
 
     let nine_patch_handle = nine_patches.add(NinePatchBuilder::by_margins(44, 44, 44, 44));
 
     let mut rng = rand::thread_rng();
 
-    // Log UI
+    // Layout
     commands
         .spawn_bundle(NodeBundle {
             style: Style {
-                flex_direction: FlexDirection::ColumnReverse,
-                align_self: AlignSelf::Center,
-                size: Size::new(Val::Px(300.0), Val::Percent(100.0)),
-                overflow: Overflow::Hidden,
-                position_type: PositionType::Absolute,
-                position: UiRect {
-                    right: Val::Px(0.),
-                    ..default()
+                direction: Direction::LeftToRight,
+                flex_direction: FlexDirection::Row,
+                align_items: AlignItems::FlexStart,
+                justify_content: JustifyContent::SpaceEvenly,
+                size: Size {
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
                 },
-                ..default()
+
+                ..Default::default()
             },
             color: Color::NONE.into(),
-            ..default()
+            ..Default::default()
         })
+        .insert(Layout)
         .with_children(|parent| {
-            // Background
-            parent.spawn_bundle(NinePatchBundle {
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    position: UiRect::all(Val::Percent(0.)),
+            parent
+                .spawn_bundle(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::FlexStart,
+                        justify_content: JustifyContent::FlexStart,
+                        flex_grow: 1.,
+                        flex_shrink: 1.,
+                        size: Size {
+                            width: Val::Auto,
+                            height: Val::Percent(100.),
+                        },
+                        ..Default::default()
+                    },
+                    color: Color::NONE.into(),
                     ..Default::default()
-                },
-                nine_patch_data: NinePatchData {
-                    texture: my_assets.ui_panel_wood_wear.clone(),
-                    nine_patch: nine_patch_handle,
-                    ..default()
-                },
-                ..Default::default()
-            });
+                })
+                .with_children(|_parent| {
+                    // @TODO: control buttons go here
+                });
 
-            // Moving panel
+            // Log UI
             parent
                 .spawn_bundle(NodeBundle {
                     style: Style {
                         flex_direction: FlexDirection::ColumnReverse,
-                        flex_grow: 1.0,
-                        max_size: Size::new(Val::Undefined, Val::Undefined),
+                        flex_grow: 0.,
+                        flex_shrink: 0.,
+                        align_self: AlignSelf::Center,
+                        size: Size::new(Val::Px(200.0), Val::Percent(100.0)),
+                        overflow: Overflow::Hidden,
+                        position: UiRect {
+                            right: Val::Px(0.),
+                            ..default()
+                        },
                         ..default()
                     },
                     color: Color::NONE.into(),
                     ..default()
                 })
-                .insert(ScrollingList::default())
-                .insert(TransactionLog);
+                .with_children(|parent| {
+                    // Background
+                    parent.spawn_bundle(NinePatchBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            position: UiRect::all(Val::Percent(0.)),
+                            ..Default::default()
+                        },
+                        nine_patch_data: NinePatchData {
+                            texture: my_assets.ui_panel_wood_wear.clone(),
+                            nine_patch: nine_patch_handle.clone(),
+                            ..default()
+                        },
+                        ..Default::default()
+                    });
+
+                    // Moving panel
+                    parent
+                        .spawn_bundle(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::ColumnReverse,
+                                flex_grow: 1.0,
+                                max_size: Size::new(Val::Undefined, Val::Undefined),
+                                ..default()
+                            },
+                            color: Color::NONE.into(),
+                            ..default()
+                        })
+                        .insert(ScrollingList::default())
+                        .insert(TransactionLog);
+                });
         });
+
+    // Desk
+    commands.spawn_bundle(SpriteBundle {
+        texture: my_assets.ui_panel_wood_wear.clone(),
+        transform: Transform::from_translation(Vec3::new(0., -150., 0.)).with_scale(Vec3::ONE * 2.),
+        ..Default::default()
+    });
 
     // @TODO: spawn customer somewhere else
     commands
@@ -204,7 +258,8 @@ pub fn add_donut_sprites(
                     },
                     ..Default::default()
                 })
-                .insert(*base);
+                .insert(*base)
+                .insert(RenderLayers::layer(1));
 
             parent
                 .spawn_bundle(SpriteSheetBundle {
@@ -215,7 +270,8 @@ pub fn add_donut_sprites(
                     },
                     ..Default::default()
                 })
-                .insert(*glazing);
+                .insert(*glazing)
+                .insert(RenderLayers::layer(1));
 
             parent
                 .spawn_bundle(SpriteSheetBundle {
@@ -226,7 +282,8 @@ pub fn add_donut_sprites(
                     },
                     ..Default::default()
                 })
-                .insert(*sprinkles);
+                .insert(*sprinkles)
+                .insert(RenderLayers::layer(1));
         });
     }
 }
@@ -279,7 +336,7 @@ pub fn cook_another_donut(
         commands
             .spawn_bundle(DonutBundle {
                 spatial: SpatialBundle::from_transform(
-                    Transform::from_translation(Vec3::new(0., -150., 0.))
+                    Transform::from_translation(Vec3::new(0., -150., 1.))
                         .with_scale(Vec3::ONE * 0.5),
                 ),
                 ..Default::default()
@@ -342,13 +399,15 @@ pub fn offer_cooked_donut(
                         target: RenderTarget::Image(donut_image_handle.clone()),
                         ..Default::default()
                     },
-                    transform: Transform::from_translation(Vec3::new(0., -150., 0.))
+                    transform: Transform::from_translation(Vec3::new(0., -150., 1.))
                         .with_scale(Vec3::ONE * 0.3),
                     ..Default::default()
                 };
                 commands
                     .spawn_bundle(donut_camera_bundle)
-                    .insert(PhotoCamera);
+                    .insert(PhotoCamera)
+                    .insert(RenderLayers::layer(1));
+
                 commands
                     .entity(cooking_donut)
                     .insert(Photo(donut_image_handle));
@@ -413,8 +472,8 @@ pub fn log_transaction(
                             color: Color::NONE.into(),
                             style: Style {
                                 flex_shrink: 0.,
-                                size: Size::new(Val::Auto, Val::Px(120.)),
-                                padding: UiRect::all(Val::Px(10.)),
+                                padding: UiRect::all(Val::Px(20.)),
+
                                 ..default()
                             },
                             ..Default::default()
@@ -425,9 +484,10 @@ pub fn log_transaction(
                                     image: UiImage(photo.0.clone()),
                                     style: Style {
                                         size: Size {
-                                            width: Val::Px(100.),
-                                            height: Val::Px(100.),
+                                            width: Val::Px(80.),
+                                            height: Val::Undefined,
                                         },
+                                        aspect_ratio: Some(1.),
                                         ..Default::default()
                                     },
                                     ..Default::default()
@@ -439,9 +499,10 @@ pub fn log_transaction(
                                     image: UiImage(emo_photo.0.clone()),
                                     style: Style {
                                         size: Size {
-                                            width: Val::Px(100.),
-                                            height: Val::Px(100.),
+                                            width: Val::Px(80.),
+                                            height: Val::Undefined,
                                         },
+                                        aspect_ratio: Some(1.),
                                         ..Default::default()
                                     },
                                     ..Default::default()
@@ -474,8 +535,23 @@ pub fn winning(query: Query<Entity, With<Regular>>, mut app_state: ResMut<State<
     }
 }
 
-pub fn setup_game_over(mut commands: Commands, my_assets: Res<MyAssets>) {
-    commands
+pub fn setup_game_over(
+    mut commands: Commands,
+    my_assets: Res<MyAssets>,
+    layout: Query<Entity, With<Layout>>,
+) {
+    let layout = layout.get_single().unwrap();
+
+    let popup = commands.spawn_bundle(NodeBundle {
+        style: Style {
+                size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            color: Color::NONE.into(),
+            ..default()
+    }).with_children(|parent| {
+        parent
         .spawn_bundle(NodeBundle {
             style: Style {
                 flex_direction: FlexDirection::ColumnReverse,
@@ -558,26 +634,29 @@ pub fn setup_game_over(mut commands: Commands, my_assets: Res<MyAssets>) {
             .insert(PlayAgainButton)
             .with_children(|parent| {
                 parent.spawn_bundle(TextBundle {
-                text: Text {
-                    sections: vec![TextSection {
-                        value: "Play again".to_string(),
-                        style: TextStyle {
-                            font_size: 40.,
-                            font: my_assets.font_blocks.clone(),
-                            color: Color::WHITE,
-                        },
-                    }
-                    ],
-                    alignment: TextAlignment::CENTER,
-                },
-                style: Style {
-                    margin: UiRect::all(Val::Auto),
+                    text: Text {
+                        sections: vec![TextSection {
+                            value: "Play again".to_string(),
+                            style: TextStyle {
+                                font_size: 40.,
+                                font: my_assets.font_blocks.clone(),
+                                color: Color::WHITE,
+                            },
+                        }
+                        ],
+                        alignment: TextAlignment::CENTER,
+                    },
+                    style: Style {
+                        margin: UiRect::all(Val::Auto),
+                        ..Default::default()
+                    },
                     ..Default::default()
-                },
-                ..Default::default()
-            });
+                });
             });
         });
+    }).id();
+
+    commands.entity(layout).push_children(&[popup]);
 }
 
 pub fn play_again_button(

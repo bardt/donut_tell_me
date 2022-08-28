@@ -264,3 +264,6 @@ pub struct Regular;
 
 #[derive(Component)]
 pub struct PlayAgainButton;
+
+#[derive(Component)]
+pub struct Layout;
