@@ -5,9 +5,7 @@ use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
-use bevy::render::render_resource::{
-    Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-};
+use bevy::render::render_resource::{Extent3d, TextureUsages};
 use bevy::sprite::Anchor;
 use bevy_ninepatch::*;
 use rand::prelude::*;
@@ -323,20 +321,11 @@ pub fn offer_cooked_donut(
                     ..default()
                 };
                 // This is the texture that will be rendered to.
-                let mut image = Image {
-                    texture_descriptor: TextureDescriptor {
-                        label: None,
-                        size,
-                        dimension: TextureDimension::D2,
-                        format: TextureFormat::Bgra8UnormSrgb,
-                        mip_level_count: 1,
-                        sample_count: 1,
-                        usage: TextureUsages::TEXTURE_BINDING
-                            | TextureUsages::COPY_DST
-                            | TextureUsages::RENDER_ATTACHMENT,
-                    },
-                    ..default()
-                };
+                let mut image = Image::default();
+                image.texture_descriptor.size = size;
+                image.texture_descriptor.usage = TextureUsages::TEXTURE_BINDING
+                    | TextureUsages::COPY_DST
+                    | TextureUsages::RENDER_ATTACHMENT;
 
                 // fill image.data with zeroes
                 image.resize(size);
