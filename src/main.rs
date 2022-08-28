@@ -12,6 +12,12 @@ fn main() {
     static PHOTO: &str = "photo";
     App::new()
         .add_plugins(DefaultPlugins)
+        .insert_resource(WindowDescriptor {
+            width: 960.,
+            height: 620.,
+            title: "Donut Tell Me!".to_string(),
+            ..Default::default()
+        })
         .insert_resource(ClearColor(Color::hex("86c0d1").unwrap_or(Color::WHITE)))
         .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(JsonAssetPlugin::<assets::TextureAtlasData>::new(&[
