@@ -5,6 +5,8 @@ use bevy_asset_loader::prelude::*;
 pub struct MyAssets {
     #[asset(path = "fonts/Kenney Blocks.ttf")]
     pub font_blocks: Handle<Font>,
+    #[asset(path = "fonts/Kenney Pixel.ttf")]
+    pub font_pixel: Handle<Font>,
     #[asset(path = "Donuts/Spritesheet/donuts_sheet.png")]
     pub donuts_texture: Handle<Image>,
     #[asset(path = "Donuts/Spritesheet/donuts_sheet.atlas.json")]

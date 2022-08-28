@@ -128,6 +128,16 @@ impl Taste {
         (average_weight * 5.).round() as usize
     }
 
+    #[allow(dead_code)]
+    pub fn all() -> Self {
+        Self {
+            bases: [5; Base::SPRITES_COUNT],
+            glazing: [5; Glazing::SPRITES_COUNT],
+            sprinkles: [5; Sprinkles::SPRITES_COUNT],
+        }
+    }
+
+    #[allow(dead_code)]
     pub fn random() -> Self {
         use rand::distributions::WeightedIndex;
         use rand::prelude::*;
@@ -149,10 +159,13 @@ impl Taste {
 fn test_donut_ranking() {
     let donut = DonutBundle::default();
 
-    let no_taste = Taste::default();
     assert_eq!(
-        no_taste.rank(&donut.base, &donut.glazing, &donut.sprinkles),
+        Taste::default().rank(&donut.base, &donut.glazing, &donut.sprinkles),
         0
+    );
+    assert_eq!(
+        Taste::all().rank(&donut.base, &donut.glazing, &donut.sprinkles),
+        5
     );
 
     let mut taste = Taste::default();
@@ -227,7 +240,7 @@ impl Default for SalesLogBundle {
     }
 }
 
-#[derive(Component, Clone, Copy)]
+#[derive(Component, Clone, Copy, PartialEq, Eq)]
 pub enum Emo {
     Angry = 15,
     Happy = 16,
@@ -244,4 +257,7 @@ pub struct Photo(pub Handle<Image>);
 
 #[derive(Component)]
 pub struct PhotoCamera;
-pub struct PhotosTaken;
+pub struct PhotosTakenEvent;
+
+#[derive(Component)]
+pub struct Regular;

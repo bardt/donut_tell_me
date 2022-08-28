@@ -1,5 +1,6 @@
 use crate::assets::*;
 use crate::component::*;
+use crate::AppState;
 use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
@@ -60,7 +61,8 @@ pub fn setup_game(
             transform: Transform::from_translation(Vec3::new(0., 150., 0.)),
             ..default()
         })
-        .insert(Taste::random())
+        // @TODO: set random taste
+        .insert(Taste::all())
         .insert(CurrentCustomer)
         .with_children(|parent| {
             parent.spawn_bundle(SpriteSheetBundle {
@@ -251,18 +253,20 @@ pub fn cook_another_donut(
     keys: Res<Input<KeyCode>>,
     cooking_donut: Query<Entity, With<CookingDonut>>,
 ) {
+    if cooking_donut.get_single().ok().is_some() {
+        return;
+    }
+
     if keys.just_pressed(KeyCode::N) {
-        if cooking_donut.get_single().ok().is_none() {
-            commands
-                .spawn_bundle(DonutBundle {
-                    spatial: SpatialBundle::from_transform(
-                        Transform::from_translation(Vec3::new(0., -150., 0.))
-                            .with_scale(Vec3::ONE * 0.5),
-                    ),
-                    ..Default::default()
-                })
-                .insert(CookingDonut);
-        }
+        commands
+            .spawn_bundle(DonutBundle {
+                spatial: SpatialBundle::from_transform(
+                    Transform::from_translation(Vec3::new(0., -150., 0.))
+                        .with_scale(Vec3::ONE * 0.5),
+                ),
+                ..Default::default()
+            })
+            .insert(CookingDonut);
     }
 }
 
@@ -270,13 +274,13 @@ pub fn offer_cooked_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
     cooking_donut: Query<(Entity, &Base, &Glazing, &Sprinkles), With<CookingDonut>>,
-    customer: Query<&Taste, With<CurrentCustomer>>,
+    customer: Query<(Entity, &Taste), With<CurrentCustomer>>,
     atlases: Res<Atlases>,
-    mut ev_photos_taken: EventWriter<PhotosTaken>,
+    mut ev_photos_taken: EventWriter<PhotosTakenEvent>,
     mut images: ResMut<Assets<Image>>,
 ) {
     if keys.just_pressed(KeyCode::Return) {
-        if let Ok(taste) = customer.get_single() {
+        if let Ok((customer, taste)) = customer.get_single() {
             if let Ok((cooking_donut, base, glazing, sprinkles)) = cooking_donut.get_single() {
                 let donut_rank = taste.rank(base, glazing, sprinkles);
 
@@ -287,6 +291,12 @@ pub fn offer_cooked_donut(
                     2 => Emo::Angry,
                     _ => Emo::Heartbroken,
                 };
+
+                if emotion == Emo::Love {
+                    commands.entity(customer).insert(Regular);
+                } else {
+                    commands.entity(customer).remove::<Regular>();
+                }
 
                 let size = Extent3d {
                     width: 512,
@@ -365,7 +375,7 @@ pub fn offer_cooked_donut(
 
                 println!("I rate this donut as {}", "⭐️".repeat(donut_rank));
 
-                ev_photos_taken.send(PhotosTaken);
+                ev_photos_taken.send(PhotosTakenEvent);
             }
         }
     }
@@ -373,7 +383,7 @@ pub fn offer_cooked_donut(
 
 pub fn log_transaction(
     mut commands: Commands,
-    mut ev_photos_taken: EventReader<PhotosTaken>,
+    mut ev_photos_taken: EventReader<PhotosTakenEvent>,
     photo_cameras: Query<Entity, With<PhotoCamera>>,
     cooking_donut: Query<(Entity, &Photo), With<CookingDonut>>,
     emo_photo: Query<&Photo, With<Emo>>,
@@ -446,4 +456,85 @@ pub fn disappearing(
             commands.entity(entity).despawn_recursive();
         }
     }
+}
+
+pub fn winning(query: Query<Entity, With<Regular>>, mut app_state: ResMut<State<AppState>>) {
+    if query.iter().count() >= 1 {
+        app_state.set(AppState::GameOver).ok();
+    }
+}
+
+pub fn setup_game_over(mut commands: Commands, my_assets: Res<MyAssets>) {
+    commands
+        .spawn_bundle(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::ColumnReverse,
+                align_self: AlignSelf::Center,
+                size: Size::new(Val::Px(500.0), Val::Auto),
+                position_type: PositionType::Relative,
+                margin: UiRect::all(Val::Auto),
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            color: Color::rgb(0.10, 0.10, 0.10).into(),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn_bundle(TextBundle {
+                text: Text {
+                    sections: vec![TextSection {
+                        value: "The game is over!".to_string(),
+                        style: TextStyle {
+                            font_size: 50.,
+                            font: my_assets.font_blocks.clone(),
+                            color: Color::WHITE,
+                        },
+                    }
+                    ],
+                    alignment: TextAlignment::CENTER,
+                },
+                style: Style {
+                    size: Size::new(Val::Px(400.), Val::Auto),
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+
+            parent.spawn_bundle(TextBundle {
+                text: Text {
+                    sections: vec![TextSection {
+                        value: "You now have enough regular customers to sustain the business. Now it's time to lay back and chill. And instead of constantly guessing other people's wants, maybe ask yourself: What do I want?".to_string(),
+                        style: TextStyle {
+                            font_size: 20.,
+                            font: my_assets.font_pixel.clone(),
+                            color: Color::WHITE,
+                        },
+                    }
+                    ],
+                    alignment: TextAlignment::CENTER,
+                },
+                style: Style {
+                    size: Size::new(Val::Px(400.), Val::Auto),
+                    margin: UiRect::new(Val::Auto, Val::Auto, Val::Px(40.), Val::Px(40.)),
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+
+            parent.spawn_bundle(TextBundle {
+                text: Text {
+                    sections: vec![TextSection {
+                        value: "Or don't.".to_string(),
+                        style: TextStyle {
+                            font_size: 20.,
+                            font: my_assets.font_blocks.clone(),
+                            color: Color::WHITE,
+                        },
+                    }
+                    ],
+                    alignment: TextAlignment::CENTER,
+                },
+                ..Default::default()
+            });
+        });
 }
