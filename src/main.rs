@@ -11,6 +11,7 @@ fn main() {
     static PHOTO: &str = "photo";
     App::new()
         .add_plugins(DefaultPlugins)
+        .insert_resource(ClearColor(Color::hex("86c0d1").unwrap_or(Color::WHITE)))
         .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(JsonAssetPlugin::<assets::TextureAtlasData>::new(&[
             "atlas.json",
