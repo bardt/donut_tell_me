@@ -56,7 +56,7 @@ jobs:
   # Build for Linux
   release-linux:
     runs-on: ubuntu-latest
-
+    if: ${{ false }}
     steps:
       - uses: little-core-labs/get-git-tag@v3.0.1
         id: get_version
@@ -97,7 +97,7 @@ jobs:
   # Build for Windows
   release-windows:
     runs-on: windows-latest
-
+    if: ${{ false }}
     steps:
       - uses: little-core-labs/get-git-tag@v3.0.1
         id: get_version
@@ -135,7 +135,7 @@ jobs:
   # Build for macOS
   release-macos:
     runs-on: macOS-latest
-
+    if: ${{ false }}
     steps:
       - uses: little-core-labs/get-git-tag@v3.0.1
         id: get_version
