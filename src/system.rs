@@ -61,8 +61,7 @@ pub fn setup_game(
             transform: Transform::from_translation(Vec3::new(0., 150., 0.)),
             ..default()
         })
-        // @TODO: set random taste
-        .insert(Taste::all())
+        .insert(Taste::random())
         .insert(CurrentCustomer)
         .with_children(|parent| {
             parent.spawn_bundle(SpriteSheetBundle {
@@ -366,12 +365,13 @@ pub fn offer_cooked_donut(
                             index: emotion as usize,
                             ..Default::default()
                         },
-                        transform: Transform::from_translation(Vec3::new(0., 275., 0.)),
+                        transform: Transform::from_translation(Vec3::new(0., 275., 0.))
+                            .with_scale(Vec3::ONE * 1.5),
                         ..Default::default()
                     })
                     .insert(emotion)
                     .insert(Photo(emo_image_handle))
-                    .insert(DisappearingTimer(Timer::from_seconds(1., false)));
+                    .insert(DisappearingTimer(Timer::from_seconds(2., false)));
 
                 println!("I rate this donut as {}", "⭐️".repeat(donut_rank));
 
@@ -536,5 +536,53 @@ pub fn setup_game_over(mut commands: Commands, my_assets: Res<MyAssets>) {
                 },
                 ..Default::default()
             });
+
+            parent.spawn_bundle(ButtonBundle {
+                color: Color::TEAL.into(),
+                style: Style {
+                    margin: UiRect::all(Val::Px(40.)),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .insert(PlayAgainButton)
+            .with_children(|parent| {
+                parent.spawn_bundle(TextBundle {
+                text: Text {
+                    sections: vec![TextSection {
+                        value: "Play again".to_string(),
+                        style: TextStyle {
+                            font_size: 40.,
+                            font: my_assets.font_blocks.clone(),
+                            color: Color::WHITE,
+                        },
+                    }
+                    ],
+                    alignment: TextAlignment::CENTER,
+                },
+                style: Style {
+                    margin: UiRect::all(Val::Auto),
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+            });
         });
+}
+
+pub fn play_again_button(
+    button: Query<&Interaction, With<PlayAgainButton>>,
+    mut app_state: ResMut<State<AppState>>,
+) {
+    for interaction in button.iter() {
+        if let Interaction::Clicked = interaction {
+            app_state.set(AppState::InGame).ok();
+        }
+    }
+}
+
+pub fn cleanup(mut commands: Commands, query: Query<Entity, Without<Parent>>) {
+    for entity in query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
 }

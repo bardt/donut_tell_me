@@ -42,6 +42,10 @@ fn main() {
         .add_system_set(
             SystemSet::on_enter(AppState::GameOver).with_system(system::setup_game_over),
         )
+        .add_system_set(
+            SystemSet::on_update(AppState::GameOver).with_system(system::play_again_button),
+        )
+        .add_system_set(SystemSet::on_exit(AppState::GameOver).with_system(system::cleanup))
         .add_system(system::disappearing)
         .add_system(system::mouse_scroll)
         .run();

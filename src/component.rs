@@ -261,3 +261,6 @@ pub struct PhotosTakenEvent;
 
 #[derive(Component)]
 pub struct Regular;
+
+#[derive(Component)]
+pub struct PlayAgainButton;
