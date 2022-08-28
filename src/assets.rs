@@ -3,9 +3,9 @@ use bevy_asset_loader::prelude::*;
 
 #[derive(AssetCollection)]
 pub struct MyAssets {
-    #[asset(path = "fonts/Kenney Blocks.ttf")]
+    #[asset(path = "fonts/Kenney_Blocks.ttf")]
     pub font_blocks: Handle<Font>,
-    #[asset(path = "fonts/Kenney Pixel.ttf")]
+    #[asset(path = "fonts/Kenney_Pixel.ttf")]
     pub font_pixel: Handle<Font>,
     #[asset(path = "Interface Pack/PNG/Retina/panel_woodWear.png")]
     pub ui_panel_wood_wear: Handle<Image>,
