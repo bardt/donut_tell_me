@@ -201,7 +201,6 @@ pub fn setup_game(
                             color: Color::NONE.into(),
                             ..Default::default()
                         })
-                        .insert(OfferButton)
                         .with_children(|parent| {
                             parent
                                 .spawn_bundle(ButtonBundle {
@@ -212,6 +211,7 @@ pub fn setup_game(
                                     },
                                     ..Default::default()
                                 })
+                                .insert(OfferButton)
                                 .with_children(|parent| {
                                     parent.spawn_bundle(TextBundle {
                                         text: Text {
@@ -723,13 +723,15 @@ pub fn cook_another_donut(
 pub fn offer_cooked_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
+    mut interactions: Query<&mut Interaction, With<OfferButton>>,
     cooking_donut: Query<(Entity, &Base, &Glazing, &Sprinkles), With<CookingDonut>>,
     customer: Query<(Entity, &Taste), With<CurrentCustomer>>,
+    photo_cameras: Query<Entity, With<PhotoCamera>>,
     atlases: Res<Atlases>,
     mut ev_photos_taken: EventWriter<PhotosTakenEvent>,
     mut images: ResMut<Assets<Image>>,
 ) {
-    if keys.just_pressed(KeyCode::Return) {
+    let mut do_stuff = || {
         if let Ok((customer, taste)) = customer.get_single() {
             if let Ok((cooking_donut, base, glazing, sprinkles)) = cooking_donut.get_single() {
                 let donut_rank = taste.rank(base, glazing, sprinkles);
@@ -746,6 +748,10 @@ pub fn offer_cooked_donut(
                     commands.entity(customer).insert(Regular);
                 } else {
                     commands.entity(customer).remove::<Regular>();
+                }
+
+                for photo_camera in photo_cameras.iter() {
+                    commands.entity(photo_camera).despawn_recursive();
                 }
 
                 let size = Extent3d {
@@ -813,7 +819,7 @@ pub fn offer_cooked_donut(
                             index: emotion as usize,
                             ..Default::default()
                         },
-                        transform: Transform::from_translation(Vec3::new(0., 275., 0.))
+                        transform: Transform::from_translation(Vec3::new(0., 265., 0.))
                             .with_scale(Vec3::ONE * 1.5),
                         ..Default::default()
                     })
@@ -825,6 +831,17 @@ pub fn offer_cooked_donut(
 
                 ev_photos_taken.send(PhotosTakenEvent);
             }
+        }
+    };
+
+    if keys.just_pressed(KeyCode::Return) {
+        do_stuff();
+    }
+
+    for mut interaction in interactions.iter_mut() {
+        if let Interaction::Clicked = *interaction {
+            do_stuff();
+            *interaction = Interaction::None
         }
     }
 }
