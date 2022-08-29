@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::assets::*;
 use crate::component::*;
 use crate::AppState;
@@ -5,6 +7,7 @@ use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
+use bevy::render::render_resource::encase::rts_array::Length;
 use bevy::render::render_resource::{Extent3d, TextureUsages};
 use bevy::render::view::RenderLayers;
 use bevy::sprite::Anchor;
@@ -13,10 +16,7 @@ use rand::prelude::*;
 
 pub fn setup_game(
     mut commands: Commands,
-    atlases: Res<Atlases>,
     my_assets: Res<MyAssets>,
-    faces_metadata: Res<FacesMetadata>,
-    hair_metadata: Res<HairMetadata>,
     mut nine_patches: ResMut<Assets<NinePatchBuilder<()>>>,
 ) {
     let mut main_camera_bundle = Camera2dBundle::default();
@@ -25,9 +25,9 @@ pub fn setup_game(
         .spawn_bundle(main_camera_bundle)
         .insert(RenderLayers::from_layers(&[0, 1]));
 
-    let nine_patch_handle = nine_patches.add(NinePatchBuilder::by_margins(44, 44, 44, 44));
+    commands.insert_resource(Line(VecDeque::new()));
 
-    let mut rng = rand::thread_rng();
+    let nine_patch_handle = nine_patches.add(NinePatchBuilder::by_margins(44, 44, 44, 44));
 
     // Layout
     commands
@@ -441,54 +441,6 @@ pub fn setup_game(
         transform: Transform::from_translation(Vec3::new(0., -150., 0.)).with_scale(Vec3::ONE * 2.),
         ..Default::default()
     });
-
-    // @TODO: spawn customer somewhere else
-    commands
-        .spawn_bundle(SpatialBundle {
-            transform: Transform::from_translation(Vec3::new(0., 150., 0.)),
-            ..default()
-        })
-        .insert(Taste::random())
-        .insert(CurrentCustomer)
-        .with_children(|parent| {
-            parent.spawn_bundle(SpriteSheetBundle {
-                texture_atlas: atlases.skin_atlas.clone(),
-                sprite: TextureAtlasSprite {
-                    index: 2,
-                    anchor: Anchor::Center,
-                    ..Default::default()
-                },
-                ..Default::default()
-            });
-
-            parent.spawn_bundle(SpriteSheetBundle {
-                texture_atlas: atlases.face_atlas.clone(),
-                transform: Transform::default().with_translation(Vec3::new(0., 0., 1.)),
-                sprite: TextureAtlasSprite {
-                    index: faces_metadata
-                        .face_indexes
-                        .choose(&mut rng)
-                        .cloned()
-                        .unwrap_or(0),
-                    anchor: Anchor::Center,
-                    ..Default::default()
-                },
-                ..Default::default()
-            });
-
-            // Pick random hair style
-            let index = rng.gen_range(0..hair_metadata.names.len());
-            let anchor = hair_metadata.anchor(index);
-            parent.spawn_bundle(SpriteSheetBundle {
-                texture_atlas: atlases.hair_atlas.clone(),
-                sprite: TextureAtlasSprite {
-                    index,
-                    anchor,
-                    ..Default::default()
-                },
-                ..Default::default()
-            });
-        });
 }
 
 #[derive(Component, Default)]
@@ -755,6 +707,10 @@ pub fn offer_cooked_donut(
                     commands.entity(customer).remove::<Regular>();
                 }
 
+                commands
+                    .entity(customer)
+                    .insert(LeavingTimer(Timer::from_seconds(2.1, false)));
+
                 for photo_camera in photo_cameras.iter() {
                     commands.entity(photo_camera).despawn_recursive();
                 }
@@ -930,8 +886,23 @@ pub fn disappearing(
     }
 }
 
-pub fn winning(query: Query<Entity, With<Regular>>, mut app_state: ResMut<State<AppState>>) {
-    if query.iter().count() >= 1 {
+pub fn leaving(
+    mut commands: Commands,
+    mut timers: Query<(Entity, &mut LeavingTimer)>,
+    time: Res<Time>,
+) {
+    for (entity, mut timer) in timers.iter_mut() {
+        if timer.0.tick(time.delta()).just_finished() {
+            commands
+                .entity(entity)
+                .remove::<CurrentCustomer>()
+                .insert(Visibility { is_visible: false });
+        }
+    }
+}
+
+pub fn winning(regulars: Query<Entity, With<Regular>>, mut app_state: ResMut<State<AppState>>) {
+    if regulars.iter().count() >= 3 {
         app_state.set(AppState::GameOver).ok();
     }
 }
@@ -1074,5 +1045,83 @@ pub fn play_again_button(
 pub fn cleanup(mut commands: Commands, query: Query<Entity, Without<Parent>>) {
     for entity in query.iter() {
         commands.entity(entity).despawn_recursive();
+    }
+}
+
+pub fn next_customer(
+    mut commands: Commands,
+    mut line: ResMut<Line>,
+    current_customer: Query<Entity, With<CurrentCustomer>>,
+) {
+    if current_customer.is_empty() && !line.0.is_empty() {
+        let current_first = line.0.pop_front().unwrap();
+        line.0.push_back(current_first);
+
+        let new_first = line.0.front().unwrap();
+        commands
+            .entity(*new_first)
+            .insert(CurrentCustomer)
+            .insert(Visibility { is_visible: true });
+    }
+}
+
+pub fn fill_line(
+    mut commands: Commands,
+    mut line: ResMut<Line>,
+    atlases: Res<Atlases>,
+    faces_metadata: Res<FacesMetadata>,
+    hair_metadata: Res<HairMetadata>,
+) {
+    let mut rng = rand::thread_rng();
+    if line.0.length() < 4 {
+        let new_customer = commands
+            .spawn_bundle(SpatialBundle {
+                transform: Transform::from_translation(Vec3::new(0., 150., 0.)),
+                visibility: Visibility { is_visible: false },
+                ..default()
+            })
+            .insert(Taste::random())
+            .with_children(|parent| {
+                parent.spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: atlases.skin_atlas.clone(),
+                    sprite: TextureAtlasSprite {
+                        index: 2,
+                        anchor: Anchor::Center,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                });
+
+                parent.spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: atlases.face_atlas.clone(),
+                    transform: Transform::default().with_translation(Vec3::new(0., 0., 1.)),
+                    sprite: TextureAtlasSprite {
+                        index: faces_metadata
+                            .face_indexes
+                            .choose(&mut rng)
+                            .cloned()
+                            .unwrap_or(0),
+                        anchor: Anchor::Center,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                });
+
+                // Pick random hair style
+                let index = rng.gen_range(0..hair_metadata.names.len());
+                let anchor = hair_metadata.anchor(index);
+                parent.spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: atlases.hair_atlas.clone(),
+                    sprite: TextureAtlasSprite {
+                        index,
+                        anchor,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                });
+            })
+            .id();
+
+        line.0.push_back(new_customer);
     }
 }

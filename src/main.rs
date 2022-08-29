@@ -47,12 +47,15 @@ fn main() {
             .with_system(system::update_donut_sprites)
             .with_system(system::cook_another_donut)
             .with_system(system::offer_cooked_donut)
+            .with_system(system::next_customer)
+            .with_system(system::fill_line)
             .with_system(system::winning),
     )
     .add_system_set(SystemSet::on_enter(AppState::GameOver).with_system(system::setup_game_over))
     .add_system_set(SystemSet::on_update(AppState::GameOver).with_system(system::play_again_button))
     .add_system_set(SystemSet::on_exit(AppState::GameOver).with_system(system::cleanup))
     .add_system(system::disappearing)
+    .add_system(system::leaving)
     .add_system(system::mouse_scroll);
 
     if cfg!(debug_assertions) {

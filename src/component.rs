@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
 
 pub trait ToSpriteIndex {
@@ -263,6 +265,10 @@ pub enum Emo {
 #[derive(Component)]
 pub struct DisappearingTimer(pub Timer);
 
+// Customer going away
+#[derive(Component)]
+pub struct LeavingTimer(pub Timer);
+
 #[derive(Component)]
 pub struct Photo(pub Handle<Image>);
 
@@ -301,3 +307,5 @@ pub struct NewDonutButton;
 
 #[derive(Component)]
 pub struct Layout;
+
+pub struct Line(pub VecDeque<Entity>);

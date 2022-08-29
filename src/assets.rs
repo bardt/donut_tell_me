@@ -96,13 +96,13 @@ impl HairMetadata {
                 return Anchor::Custom(Vec2::new(0., 0.06));
             }
             if name.contains("Woman2") {
-                return Anchor::Custom(Vec2::new(0., 0.15));
+                return Anchor::Custom(Vec2::new(0., 0.13));
             }
             if name.contains("Woman3") {
-                return Anchor::Custom(Vec2::new(0., 0.09));
+                return Anchor::Custom(Vec2::new(0., 0.1));
             }
             if name.contains("Woman4") {
-                return Anchor::Custom(Vec2::new(0., 0.152));
+                return Anchor::Custom(Vec2::new(0., 0.14));
             }
             if name.contains("Woman5") {
                 return Anchor::Custom(Vec2::new(0., 0.05));
