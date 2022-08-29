@@ -143,7 +143,7 @@ impl Taste {
         use rand::prelude::*;
 
         let choices = [1, 2, 3, 4, 5];
-        let weights = [1, 2, 5, 6, 3];
+        let weights = [1, 2, 4, 6, 3];
         let dist = WeightedIndex::new(&weights).unwrap();
         let mut rng = rand::thread_rng();
 

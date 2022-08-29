@@ -51,22 +51,263 @@ pub fn setup_game(
             parent
                 .spawn_bundle(NodeBundle {
                     style: Style {
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::FlexStart,
-                        justify_content: JustifyContent::FlexStart,
+                        flex_direction: FlexDirection::Row,
+                        align_items: AlignItems::Stretch,
+                        justify_content: JustifyContent::Center,
                         flex_grow: 1.,
                         flex_shrink: 1.,
                         size: Size {
                             width: Val::Auto,
-                            height: Val::Percent(100.),
+                            height: Val::Percent(50.),
                         },
                         ..Default::default()
                     },
                     color: Color::NONE.into(),
                     ..Default::default()
                 })
-                .with_children(|_parent| {
-                    // @TODO: control buttons go here
+                .with_children(|parent| {
+                    // Left buttons
+                    parent
+                        .spawn_bundle(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::ColumnReverse,
+                                align_items: AlignItems::FlexEnd,
+                                justify_content: JustifyContent::SpaceEvenly,
+                                flex_grow: 1.,
+                                flex_shrink: 1.,
+                                size: Size {
+                                    width: Val::Auto,
+                                    height: Val::Percent(100.),
+                                },
+                                padding: UiRect::all(Val::Px(10.)),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            parent
+                                .spawn_bundle(ButtonBundle {
+                                    image: UiImage(my_assets.ui_button_rectangle_wood.clone()),
+                                    style: Style {
+                                        padding: UiRect::all(Val::Px(10.)),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                })
+                                .with_children(|parent| {
+                                    parent.spawn_bundle(TextBundle {
+                                        text: Text {
+                                            sections: vec![TextSection {
+                                                value: "< base".to_string(),
+                                                style: TextStyle {
+                                                    font_size: 20.,
+                                                    font: my_assets.font_pixel.clone(),
+                                                    color: Color::BLACK,
+                                                },
+                                            }],
+                                            alignment: TextAlignment::CENTER,
+                                        },
+                                        style: Style {
+                                            margin: UiRect::all(Val::Auto),
+
+                                            ..Default::default()
+                                        },
+                                        ..Default::default()
+                                    });
+                                });
+
+                            parent
+                                .spawn_bundle(ButtonBundle {
+                                    image: UiImage(my_assets.ui_button_rectangle_wood.clone()),
+                                    style: Style {
+                                        padding: UiRect::all(Val::Px(10.)),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                })
+                                .with_children(|parent| {
+                                    parent.spawn_bundle(TextBundle {
+                                        text: Text {
+                                            sections: vec![TextSection {
+                                                value: "< glazing".to_string(),
+                                                style: TextStyle {
+                                                    font_size: 20.,
+                                                    font: my_assets.font_pixel.clone(),
+                                                    color: Color::BLACK,
+                                                },
+                                            }],
+                                            alignment: TextAlignment::CENTER,
+                                        },
+                                        style: Style {
+                                            margin: UiRect::all(Val::Auto),
+
+                                            ..Default::default()
+                                        },
+                                        ..Default::default()
+                                    });
+                                });
+
+                            parent
+                                .spawn_bundle(ButtonBundle {
+                                    image: UiImage(my_assets.ui_button_rectangle_wood.clone()),
+                                    style: Style {
+                                        padding: UiRect::all(Val::Px(10.)),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                })
+                                .with_children(|parent| {
+                                    parent.spawn_bundle(TextBundle {
+                                        text: Text {
+                                            sections: vec![TextSection {
+                                                value: "< top".to_string(),
+                                                style: TextStyle {
+                                                    font_size: 20.,
+                                                    font: my_assets.font_pixel.clone(),
+                                                    color: Color::BLACK,
+                                                },
+                                            }],
+                                            alignment: TextAlignment::CENTER,
+                                        },
+                                        style: Style {
+                                            margin: UiRect::all(Val::Auto),
+
+                                            ..Default::default()
+                                        },
+                                        ..Default::default()
+                                    });
+                                });
+                        });
+
+                    // Center placeholder
+                    parent.spawn_bundle(NodeBundle {
+                        style: Style {
+                            flex_direction: FlexDirection::ColumnReverse,
+                            align_items: AlignItems::FlexEnd,
+                            justify_content: JustifyContent::SpaceEvenly,
+                            flex_grow: 0.,
+                            flex_shrink: 0.,
+                            size: Size {
+                                width: Val::Px(256.),
+                                height: Val::Percent(100.),
+                            },
+                            ..Default::default()
+                        },
+                        color: Color::NONE.into(),
+                        ..Default::default()
+                    });
+
+                    // Right buttons
+                    parent
+                        .spawn_bundle(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::ColumnReverse,
+                                align_items: AlignItems::FlexStart,
+                                justify_content: JustifyContent::SpaceEvenly,
+                                flex_grow: 1.,
+                                flex_shrink: 1.,
+                                size: Size {
+                                    width: Val::Auto,
+                                    height: Val::Percent(100.),
+                                },
+                                padding: UiRect::all(Val::Px(10.)),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        })
+                        .with_children(|parent| {
+                            parent
+                                .spawn_bundle(ButtonBundle {
+                                    image: UiImage(my_assets.ui_button_rectangle_wood.clone()),
+                                    style: Style {
+                                        padding: UiRect::all(Val::Px(10.)),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                })
+                                .with_children(|parent| {
+                                    parent.spawn_bundle(TextBundle {
+                                        text: Text {
+                                            sections: vec![TextSection {
+                                                value: "base >".to_string(),
+                                                style: TextStyle {
+                                                    font_size: 20.,
+                                                    font: my_assets.font_pixel.clone(),
+                                                    color: Color::BLACK,
+                                                },
+                                            }],
+                                            alignment: TextAlignment::CENTER,
+                                        },
+                                        style: Style {
+                                            margin: UiRect::all(Val::Auto),
+                                            ..Default::default()
+                                        },
+                                        ..Default::default()
+                                    });
+                                });
+
+                            parent
+                                .spawn_bundle(ButtonBundle {
+                                    image: UiImage(my_assets.ui_button_rectangle_wood.clone()),
+                                    style: Style {
+                                        padding: UiRect::all(Val::Px(10.)),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                })
+                                .with_children(|parent| {
+                                    parent.spawn_bundle(TextBundle {
+                                        text: Text {
+                                            sections: vec![TextSection {
+                                                value: "glazing >".to_string(),
+                                                style: TextStyle {
+                                                    font_size: 20.,
+                                                    font: my_assets.font_pixel.clone(),
+                                                    color: Color::BLACK,
+                                                },
+                                            }],
+                                            alignment: TextAlignment::CENTER,
+                                        },
+                                        style: Style {
+                                            margin: UiRect::all(Val::Auto),
+
+                                            ..Default::default()
+                                        },
+                                        ..Default::default()
+                                    });
+                                });
+
+                            parent
+                                .spawn_bundle(ButtonBundle {
+                                    image: UiImage(my_assets.ui_button_rectangle_wood.clone()),
+                                    style: Style {
+                                        padding: UiRect::all(Val::Px(10.)),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                })
+                                .with_children(|parent| {
+                                    parent.spawn_bundle(TextBundle {
+                                        text: Text {
+                                            sections: vec![TextSection {
+                                                value: "top >".to_string(),
+                                                style: TextStyle {
+                                                    font_size: 20.,
+                                                    font: my_assets.font_pixel.clone(),
+                                                    color: Color::BLACK,
+                                                },
+                                            }],
+                                            alignment: TextAlignment::CENTER,
+                                        },
+                                        style: Style {
+                                            margin: UiRect::all(Val::Auto),
+
+                                            ..Default::default()
+                                        },
+                                        ..Default::default()
+                                    });
+                                });
+                        });
                 });
 
             // Log UI
@@ -406,6 +647,7 @@ pub fn offer_cooked_donut(
                 commands
                     .spawn_bundle(donut_camera_bundle)
                     .insert(PhotoCamera)
+                    .insert(UiCameraConfig { show_ui: false })
                     .insert(RenderLayers::layer(1));
 
                 commands
@@ -425,7 +667,10 @@ pub fn offer_cooked_donut(
                         .with_scale(Vec3::ONE * 0.5),
                     ..Default::default()
                 };
-                commands.spawn_bundle(emo_camera_bundle).insert(PhotoCamera);
+                commands
+                    .spawn_bundle(emo_camera_bundle)
+                    .insert(PhotoCamera)
+                    .insert(UiCameraConfig { show_ui: false });
 
                 commands
                     .spawn_bundle(SpriteSheetBundle {
