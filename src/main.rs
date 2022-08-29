@@ -43,6 +43,7 @@ fn main() {
                 .after(PHOTO)
                 .with_system(system::add_donut_sprites)
                 .with_system(system::change_cooking_donut)
+                .with_system(system::change_cooking_donut_buttons)
                 .with_system(system::update_donut_sprites)
                 .with_system(system::cook_another_donut)
                 .with_system(system::offer_cooked_donut)

@@ -95,6 +95,7 @@ pub fn setup_game(
                                     },
                                     ..Default::default()
                                 })
+                                .insert(BaseLeftButton)
                                 .with_children(|parent| {
                                     parent.spawn_bundle(TextBundle {
                                         text: Text {
@@ -126,6 +127,7 @@ pub fn setup_game(
                                     },
                                     ..Default::default()
                                 })
+                                .insert(GlazingLeftButton)
                                 .with_children(|parent| {
                                     parent.spawn_bundle(TextBundle {
                                         text: Text {
@@ -157,6 +159,7 @@ pub fn setup_game(
                                     },
                                     ..Default::default()
                                 })
+                                .insert(SprinklesLeftButton)
                                 .with_children(|parent| {
                                     parent.spawn_bundle(TextBundle {
                                         text: Text {
@@ -198,6 +201,7 @@ pub fn setup_game(
                             color: Color::NONE.into(),
                             ..Default::default()
                         })
+                        .insert(OfferButton)
                         .with_children(|parent| {
                             parent
                                 .spawn_bundle(ButtonBundle {
@@ -238,11 +242,12 @@ pub fn setup_game(
                                     },
                                     ..Default::default()
                                 })
+                                .insert(NewDonutButton)
                                 .with_children(|parent| {
                                     parent.spawn_bundle(TextBundle {
                                         text: Text {
                                             sections: vec![TextSection {
-                                                value: "new".to_string(),
+                                                value: "new donut".to_string(),
                                                 style: TextStyle {
                                                     font_size: 20.,
                                                     font: my_assets.font_pixel.clone(),
@@ -289,6 +294,7 @@ pub fn setup_game(
                                     },
                                     ..Default::default()
                                 })
+                                .insert(BaseRightButton)
                                 .with_children(|parent| {
                                     parent.spawn_bundle(TextBundle {
                                         text: Text {
@@ -319,6 +325,7 @@ pub fn setup_game(
                                     },
                                     ..Default::default()
                                 })
+                                .insert(GlazingRightButton)
                                 .with_children(|parent| {
                                     parent.spawn_bundle(TextBundle {
                                         text: Text {
@@ -350,6 +357,7 @@ pub fn setup_game(
                                     },
                                     ..Default::default()
                                 })
+                                .insert(SprinklesRightButton)
                                 .with_children(|parent| {
                                     parent.spawn_bundle(TextBundle {
                                         text: Text {
@@ -543,6 +551,62 @@ pub fn change_cooking_donut(
         }
         if keys.just_pressed(KeyCode::Z) {
             sprinkles.cycle_left();
+        }
+    }
+}
+
+pub fn change_cooking_donut_buttons(
+    mut cooking_donut: Query<
+        (&mut Base, &mut Glazing, &mut Sprinkles),
+        (With<CookingDonut>, With<Donut>),
+    >,
+    mut set: ParamSet<(
+        Query<&mut Interaction, With<BaseLeftButton>>,
+        Query<&mut Interaction, With<BaseRightButton>>,
+        Query<&mut Interaction, With<GlazingLeftButton>>,
+        Query<&mut Interaction, With<GlazingRightButton>>,
+        Query<&mut Interaction, With<SprinklesLeftButton>>,
+        Query<&mut Interaction, With<SprinklesRightButton>>,
+    )>,
+) {
+    for (mut base, mut glazing, mut sprinkles) in cooking_donut.iter_mut() {
+        for mut base_left in set.p0().iter_mut() {
+            if let Interaction::Clicked = *base_left {
+                base.cycle_left();
+                *base_left = Interaction::None;
+            }
+        }
+        for mut base_right in set.p1().iter_mut() {
+            if let Interaction::Clicked = *base_right {
+                base.cycle_right();
+                *base_right = Interaction::None;
+            }
+        }
+
+        for mut glazing_left in set.p2().iter_mut() {
+            if let Interaction::Clicked = *glazing_left {
+                glazing.cycle_left();
+                *glazing_left = Interaction::None;
+            }
+        }
+        for mut glazing_right in set.p3().iter_mut() {
+            if let Interaction::Clicked = *glazing_right {
+                glazing.cycle_right();
+                *glazing_right = Interaction::None;
+            }
+        }
+
+        for mut sprinkles_left in set.p4().iter_mut() {
+            if let Interaction::Clicked = *sprinkles_left {
+                sprinkles.cycle_left();
+                *sprinkles_left = Interaction::None;
+            }
+        }
+        for mut sprinkles_right in set.p5().iter_mut() {
+            if let Interaction::Clicked = *sprinkles_right {
+                sprinkles.cycle_right();
+                *sprinkles_right = Interaction::None;
+            }
         }
     }
 }

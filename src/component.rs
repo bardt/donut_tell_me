@@ -266,4 +266,27 @@ pub struct Regular;
 pub struct PlayAgainButton;
 
 #[derive(Component)]
+pub struct BaseLeftButton;
+
+#[derive(Component)]
+pub struct BaseRightButton;
+
+#[derive(Component)]
+pub struct GlazingLeftButton;
+
+#[derive(Component)]
+pub struct GlazingRightButton;
+
+#[derive(Component)]
+pub struct SprinklesLeftButton;
+
+#[derive(Component)]
+pub struct SprinklesRightButton;
+
+#[derive(Component)]
+pub struct OfferButton;
+#[derive(Component)]
+pub struct NewDonutButton;
+
+#[derive(Component)]
 pub struct Layout;
