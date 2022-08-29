@@ -13,7 +13,7 @@ fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
             width: 720.,
-            height: 720.,
+            height: 520., // UI looks the best at this size
             title: "Donut Tell Me!".to_string(),
             ..Default::default()
         })

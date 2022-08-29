@@ -102,6 +102,17 @@ pub struct DonutBundle {
     pub spatial: SpatialBundle,
 }
 
+impl DonutBundle {
+    pub fn new() -> Self {
+        DonutBundle {
+            spatial: SpatialBundle::from_transform(
+                Transform::from_translation(Vec3::new(0., -150., 1.)).with_scale(Vec3::ONE * 0.5),
+            ),
+            ..Default::default()
+        }
+    }
+}
+
 #[derive(Component)]
 pub struct CookingDonut;
 

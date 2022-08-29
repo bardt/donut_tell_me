@@ -695,22 +695,28 @@ pub fn update_donut_sprites(
 pub fn cook_another_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
+    mut interactions: Query<&mut Interaction, With<NewDonutButton>>,
     cooking_donut: Query<Entity, With<CookingDonut>>,
 ) {
-    if cooking_donut.get_single().ok().is_some() {
-        return;
+    let mut do_stuff = || {
+        for cooking_donut in cooking_donut.iter() {
+            commands.entity(cooking_donut).despawn_recursive();
+        }
+
+        commands
+            .spawn_bundle(DonutBundle::new())
+            .insert(CookingDonut);
+    };
+
+    for mut interaction in interactions.iter_mut() {
+        if let Interaction::Clicked = *interaction {
+            do_stuff();
+            *interaction = Interaction::None;
+        }
     }
 
     if keys.just_pressed(KeyCode::N) {
-        commands
-            .spawn_bundle(DonutBundle {
-                spatial: SpatialBundle::from_transform(
-                    Transform::from_translation(Vec3::new(0., -150., 1.))
-                        .with_scale(Vec3::ONE * 0.5),
-                ),
-                ..Default::default()
-            })
-            .insert(CookingDonut);
+        do_stuff();
     }
 }
 
