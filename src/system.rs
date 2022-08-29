@@ -555,6 +555,7 @@ pub fn change_cooking_donut(
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn change_cooking_donut_buttons(
     mut cooking_donut: Query<
         (&mut Base, &mut Glazing, &mut Sprinkles),
@@ -720,6 +721,7 @@ pub fn cook_another_donut(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn offer_cooked_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
