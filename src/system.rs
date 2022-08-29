@@ -82,6 +82,7 @@ pub fn setup_game(
                                 padding: UiRect::all(Val::Px(10.)),
                                 ..Default::default()
                             },
+                            color: Color::NONE.into(),
                             ..Default::default()
                         })
                         .with_children(|parent| {
@@ -180,22 +181,84 @@ pub fn setup_game(
                         });
 
                     // Center placeholder
-                    parent.spawn_bundle(NodeBundle {
-                        style: Style {
-                            flex_direction: FlexDirection::ColumnReverse,
-                            align_items: AlignItems::FlexEnd,
-                            justify_content: JustifyContent::SpaceEvenly,
-                            flex_grow: 0.,
-                            flex_shrink: 0.,
-                            size: Size {
-                                width: Val::Px(256.),
-                                height: Val::Percent(100.),
+                    parent
+                        .spawn_bundle(NodeBundle {
+                            style: Style {
+                                flex_direction: FlexDirection::ColumnReverse,
+                                align_items: AlignItems::Center,
+                                justify_content: JustifyContent::SpaceBetween,
+                                flex_grow: 0.,
+                                flex_shrink: 0.,
+                                size: Size {
+                                    width: Val::Px(256.),
+                                    height: Val::Percent(100.),
+                                },
+                                ..Default::default()
                             },
+                            color: Color::NONE.into(),
                             ..Default::default()
-                        },
-                        color: Color::NONE.into(),
-                        ..Default::default()
-                    });
+                        })
+                        .with_children(|parent| {
+                            parent
+                                .spawn_bundle(ButtonBundle {
+                                    image: UiImage(my_assets.ui_button_rectangle_wood.clone()),
+                                    style: Style {
+                                        padding: UiRect::all(Val::Px(10.)),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                })
+                                .with_children(|parent| {
+                                    parent.spawn_bundle(TextBundle {
+                                        text: Text {
+                                            sections: vec![TextSection {
+                                                value: "^ offer".to_string(),
+                                                style: TextStyle {
+                                                    font_size: 20.,
+                                                    font: my_assets.font_pixel.clone(),
+                                                    color: Color::BLACK,
+                                                },
+                                            }],
+                                            alignment: TextAlignment::CENTER,
+                                        },
+                                        style: Style {
+                                            margin: UiRect::all(Val::Auto),
+                                            ..Default::default()
+                                        },
+                                        ..Default::default()
+                                    });
+                                });
+
+                            parent
+                                .spawn_bundle(ButtonBundle {
+                                    image: UiImage(my_assets.ui_button_rectangle_wood.clone()),
+                                    style: Style {
+                                        padding: UiRect::all(Val::Px(10.)),
+                                        ..Default::default()
+                                    },
+                                    ..Default::default()
+                                })
+                                .with_children(|parent| {
+                                    parent.spawn_bundle(TextBundle {
+                                        text: Text {
+                                            sections: vec![TextSection {
+                                                value: "new".to_string(),
+                                                style: TextStyle {
+                                                    font_size: 20.,
+                                                    font: my_assets.font_pixel.clone(),
+                                                    color: Color::BLACK,
+                                                },
+                                            }],
+                                            alignment: TextAlignment::CENTER,
+                                        },
+                                        style: Style {
+                                            margin: UiRect::all(Val::Auto),
+                                            ..Default::default()
+                                        },
+                                        ..Default::default()
+                                    });
+                                });
+                        });
 
                     // Right buttons
                     parent
@@ -213,6 +276,7 @@ pub fn setup_game(
                                 padding: UiRect::all(Val::Px(10.)),
                                 ..Default::default()
                             },
+                            color: Color::NONE.into(),
                             ..Default::default()
                         })
                         .with_children(|parent| {
