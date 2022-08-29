@@ -651,6 +651,7 @@ pub fn cook_another_donut(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
     mut interactions: Query<&mut Interaction, With<NewDonutButton>>,
+    last_used_donut: Option<Res<LastUsedDonut>>,
     cooking_donut: Query<Entity, With<CookingDonut>>,
 ) {
     let mut do_stuff = || {
@@ -658,9 +659,14 @@ pub fn cook_another_donut(
             commands.entity(cooking_donut).despawn_recursive();
         }
 
-        commands
-            .spawn_bundle(DonutBundle::new())
-            .insert(CookingDonut);
+        let mut new_donut = DonutBundle::new();
+        if let Some(last_used_donut) = &last_used_donut {
+            new_donut.base = last_used_donut.base.clone();
+            new_donut.glazing = last_used_donut.glazing.clone();
+            new_donut.sprinkles = last_used_donut.sprinkles.clone();
+        }
+
+        commands.spawn_bundle(new_donut).insert(CookingDonut);
     };
 
     for mut interaction in interactions.iter_mut() {
@@ -690,6 +696,12 @@ pub fn offer_cooked_donut(
     let mut do_stuff = || {
         if let Ok((customer, taste)) = customer.get_single() {
             if let Ok((cooking_donut, base, glazing, sprinkles)) = cooking_donut.get_single() {
+                commands.insert_resource(LastUsedDonut {
+                    base: base.clone(),
+                    glazing: glazing.clone(),
+                    sprinkles: sprinkles.clone(),
+                });
+
                 let donut_rank = taste.rank(base, glazing, sprinkles);
 
                 let emotion = match donut_rank {

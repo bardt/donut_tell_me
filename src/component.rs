@@ -309,3 +309,9 @@ pub struct NewDonutButton;
 pub struct Layout;
 
 pub struct Line(pub VecDeque<Entity>);
+
+pub struct LastUsedDonut {
+    pub base: Base,
+    pub glazing: Glazing,
+    pub sprinkles: Sprinkles,
+}
