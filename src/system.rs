@@ -476,7 +476,8 @@ pub fn setup_game(
                 ..Default::default()
             });
 
-            let index = 7;
+            // Pick random hair style
+            let index = rng.gen_range(0..hair_metadata.names.len());
             let anchor = hair_metadata.anchor(index);
             dbg!(&anchor);
             parent.spawn_bundle(SpriteSheetBundle {
