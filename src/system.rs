@@ -7,7 +7,6 @@ use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
-use bevy::render::render_resource::encase::rts_array::Length;
 use bevy::render::render_resource::{Extent3d, TextureUsages};
 use bevy::render::view::RenderLayers;
 use bevy::sprite::Anchor;
@@ -1068,12 +1067,18 @@ pub fn next_customer(
 pub fn fill_line(
     mut commands: Commands,
     mut line: ResMut<Line>,
+    regulars: Query<Entity, With<Regular>>,
     atlases: Res<Atlases>,
     faces_metadata: Res<FacesMetadata>,
     hair_metadata: Res<HairMetadata>,
 ) {
     let mut rng = rand::thread_rng();
-    if line.0.length() < 4 {
+    let non_regulars_in_line = line
+        .0
+        .iter()
+        .filter(|customer| !regulars.contains(**customer))
+        .count();
+    if non_regulars_in_line < 4 {
         let new_customer = commands
             .spawn_bundle(SpatialBundle {
                 transform: Transform::from_translation(Vec3::new(0., 150., 0.)),
