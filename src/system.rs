@@ -479,7 +479,6 @@ pub fn setup_game(
             // Pick random hair style
             let index = rng.gen_range(0..hair_metadata.names.len());
             let anchor = hair_metadata.anchor(index);
-            dbg!(&anchor);
             parent.spawn_bundle(SpriteSheetBundle {
                 texture_atlas: atlases.hair_atlas.clone(),
                 sprite: TextureAtlasSprite {
@@ -825,7 +824,7 @@ pub fn offer_cooked_donut(
                             index: emotion as usize,
                             ..Default::default()
                         },
-                        transform: Transform::from_translation(Vec3::new(0., 265., 0.))
+                        transform: Transform::from_translation(Vec3::new(100., 245., 0.))
                             .with_scale(Vec3::ONE * 1.5),
                         ..Default::default()
                     })

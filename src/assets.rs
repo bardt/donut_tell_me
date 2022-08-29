@@ -172,7 +172,7 @@ pub fn init(
                     .map(|sub_texture| sub_texture.name.to_string())
                     .collect::<Vec<_>>()
             })
-            .unwrap_or(vec![]),
+            .unwrap_or_else(Vec::new),
     };
 
     let mut skin_atlas =
