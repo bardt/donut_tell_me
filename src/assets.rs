@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::Anchor};
 use bevy_asset_loader::prelude::*;
 
 #[derive(AssetCollection)]
@@ -49,12 +49,54 @@ pub struct Atlases {
     pub donuts_atlas: Handle<TextureAtlas>,
     pub emotes_atlas: Handle<TextureAtlas>,
     pub face_atlas: Handle<TextureAtlas>,
-    pub _hair_atlas: Handle<TextureAtlas>,
+    pub hair_atlas: Handle<TextureAtlas>,
     pub skin_atlas: Handle<TextureAtlas>,
 }
 
 pub struct FacesMetadata {
     pub face_indexes: Vec<usize>,
+}
+
+pub struct HairMetadata {
+    pub names: Vec<String>,
+}
+
+impl HairMetadata {
+    pub fn anchor(&self, index: usize) -> Anchor {
+        if index < self.names.len() {
+            let name = &self.names[index];
+
+            println!("{}", name);
+            if name.contains("Man1") {
+                return Anchor::Custom(Vec2::new(0., -0.4));
+            }
+            if name.contains("Man2") {
+                return Anchor::Custom(Vec2::new(0., -0.4));
+            }
+            if name.contains("Man3") {
+                return Anchor::Custom(Vec2::new(0., -0.4));
+            }
+            if name.contains("Man4") {
+                return Anchor::Custom(Vec2::new(0., -0.4));
+            }
+            if name.contains("Man5") {
+                return Anchor::Custom(Vec2::new(-0.05, -0.4));
+            }
+            if name.contains("Man6") {
+                return Anchor::Custom(Vec2::new(0., -0.4));
+            }
+            if name.contains("Man7") {
+                return Anchor::Custom(Vec2::new(0., -0.4));
+            }
+            if name.contains("Man8") {
+                return Anchor::Custom(Vec2::new(0., -0.25));
+            }
+
+            Anchor::Center
+        } else {
+            Anchor::Center
+        }
+    }
 }
 
 pub fn init(
@@ -100,6 +142,20 @@ pub fn init(
         TextureAtlas::new_empty(my_assets.hair_texture.clone(), Vec2::new(2048., 2048.));
     hair_atlas.fill_textures(texture_atlas_data_assets.get(&my_assets.hair_texture_data));
 
+    let hair_matadata = HairMetadata {
+        names: texture_atlas_data_assets
+            .get(&my_assets.hair_texture_data)
+            .map(|hair_texture_data| {
+                hair_texture_data
+                    .texture_atlas
+                    .sub_textures
+                    .iter()
+                    .map(|sub_texture| sub_texture.name.to_string())
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or(vec![]),
+    };
+
     let mut skin_atlas =
         TextureAtlas::new_empty(my_assets.skin_texture.clone(), Vec2::new(1024., 1024.));
     skin_atlas.fill_textures(texture_atlas_data_assets.get(&my_assets.skin_texture_data));
@@ -108,12 +164,13 @@ pub fn init(
         donuts_atlas: texture_atlases.add(donuts_atlas),
         emotes_atlas: texture_atlases.add(emotes_atlas),
         face_atlas: texture_atlases.add(face_atlas),
-        _hair_atlas: texture_atlases.add(hair_atlas),
+        hair_atlas: texture_atlases.add(hair_atlas),
         skin_atlas: texture_atlases.add(skin_atlas),
     };
 
     commands.insert_resource(handles);
     commands.insert_resource(faces_metadata);
+    commands.insert_resource(hair_matadata);
 }
 
 // JSON converted from XML via https://javadev.github.io/xml-to-json/

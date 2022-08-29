@@ -16,6 +16,7 @@ pub fn setup_game(
     atlases: Res<Atlases>,
     my_assets: Res<MyAssets>,
     faces_metadata: Res<FacesMetadata>,
+    hair_metadata: Res<HairMetadata>,
     mut nine_patches: ResMut<Assets<NinePatchBuilder<()>>>,
 ) {
     let mut main_camera_bundle = Camera2dBundle::default();
@@ -475,16 +476,18 @@ pub fn setup_game(
                 ..Default::default()
             });
 
-            // parent.spawn_bundle(SpriteSheetBundle {
-            //     texture_atlas: handles.hair_atlas.clone(),
-            //     sprite: TextureAtlasSprite {
-            //         index: 28,
-            //         // @TODO: each hair style will need a custom anchor point
-            //         anchor: Anchor::Custom(Vec2::new(0.0, 0.0)),
-            //         ..Default::default()
-            //     },
-            //     ..Default::default()
-            // });
+            let index = 7;
+            let anchor = hair_metadata.anchor(index);
+            dbg!(&anchor);
+            parent.spawn_bundle(SpriteSheetBundle {
+                texture_atlas: atlases.hair_atlas.clone(),
+                sprite: TextureAtlasSprite {
+                    index,
+                    anchor,
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
         });
 }
 
