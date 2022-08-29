@@ -661,9 +661,9 @@ pub fn cook_another_donut(
 
         let mut new_donut = DonutBundle::new();
         if let Some(last_used_donut) = &last_used_donut {
-            new_donut.base = last_used_donut.base.clone();
-            new_donut.glazing = last_used_donut.glazing.clone();
-            new_donut.sprinkles = last_used_donut.sprinkles.clone();
+            new_donut.base = last_used_donut.base;
+            new_donut.glazing = last_used_donut.glazing;
+            new_donut.sprinkles = last_used_donut.sprinkles;
         }
 
         commands.spawn_bundle(new_donut).insert(CookingDonut);
@@ -697,9 +697,9 @@ pub fn offer_cooked_donut(
         if let Ok((customer, taste)) = customer.get_single() {
             if let Ok((cooking_donut, base, glazing, sprinkles)) = cooking_donut.get_single() {
                 commands.insert_resource(LastUsedDonut {
-                    base: base.clone(),
-                    glazing: glazing.clone(),
-                    sprinkles: sprinkles.clone(),
+                    base: *base,
+                    glazing: *glazing,
+                    sprinkles: *sprinkles,
                 });
 
                 let donut_rank = taste.rank(base, glazing, sprinkles);
