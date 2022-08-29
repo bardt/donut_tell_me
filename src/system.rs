@@ -1117,6 +1117,7 @@ pub fn fill_line(
                 let anchor = hair_metadata.anchor(index);
                 parent.spawn_bundle(SpriteSheetBundle {
                     texture_atlas: atlases.hair_atlas.clone(),
+                    transform: Transform::default().with_translation(Vec3::new(0., 0., 2.)),
                     sprite: TextureAtlasSprite {
                         index,
                         anchor,
